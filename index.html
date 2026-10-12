@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#1a0b2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Баклажан Судьбы 🍆</title>
+<meta property="og:title" content="Баклажан Судьбы 🍆">
+<meta property="og:description" content="Дима, плащ и один баклажан. Покажи тем, кому зайдёт. Не попадись полиции.">
+<script src="https://telegram.org/js/telegram-web-app.js?57"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Rubik:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#1a0b2e;font-family:Rubik,system-ui,sans-serif;color:#fff;touch-action:none;overscroll-behavior:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+.H{font-family:'Russo One',Rubik,sans-serif;letter-spacing:.5px}
+.hidden{display:none!important}
+/* HUD */
+#hud{position:fixed;left:50%;transform:translateX(-50%);width:min(100%,620px);top:0;padding:calc(env(safe-area-inset-top) + 10px) 12px 0;pointer-events:none;z-index:5}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pill{background:rgba(20,8,40,.72);border:2px solid rgba(255,255,255,.18);border-radius:999px;padding:6px 14px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 4px 14px rgba(0,0,0,.35)}
+#score{font-size:26px;color:#c6ff3d;text-shadow:0 2px 0 #3a0a6b;min-width:90px}
+#score small{font-size:12px;color:#fff;opacity:.7;display:block;line-height:1;font-family:Rubik;margin-bottom:2px}
+#hearts{font-size:22px;letter-spacing:2px}
+#stars{font-size:22px;letter-spacing:1px}
+#stars .off{filter:grayscale(1) brightness(.6);opacity:.45}
+#stars.alarm{animation:alarm .4s infinite alternate}
+@keyframes alarm{from{background:rgba(255,0,60,.75)}to{background:rgba(0,90,255,.75)}}
+#bossWrap{margin-top:8px;font-family:'Russo One';font-size:12px;letter-spacing:1px;text-align:center;text-shadow:0 2px 0 #000}#bossWrap div{height:14px;border-radius:9px;background:rgba(0,0,0,.55);border:2px solid #ffd700;overflow:hidden;margin-top:3px}#bossWrap i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ff2e2e,#ff8c00);transition:width .3s}
+#timerWrap{margin-top:8px;height:10px;border-radius:9px;background:rgba(0,0,0,.45);overflow:hidden;border:2px solid rgba(255,255,255,.15)}
+#timer{height:100%;width:100%;background:linear-gradient(90deg,#ff2e88,#ffcc00,#a6ff00);transition:width .2s linear}
+#subrow{margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-height:30px}
+#quota{font-size:13px;padding:4px 10px}
+#combo{font-size:15px;padding:4px 10px;color:#ffe14d;transform-origin:left center}
+#combo.pop{animation:pop .35s}
+@keyframes pop{0%{transform:scale(1.6)}100%{transform:scale(1)}}
+.chip{font-size:13px;padding:4px 9px;border-radius:999px;background:rgba(123,47,247,.85);border:2px solid rgba(255,255,255,.3)}
+#ticker{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top) + 118px);width:min(92vw,520px);text-align:center;font-weight:700;font-size:15px;line-height:1.25;padding:8px 14px;border-radius:14px;background:rgba(255,255,255,.93);color:#2a0e4a;box-shadow:0 6px 18px rgba(0,0,0,.35);z-index:6;pointer-events:none;opacity:0;transition:opacity .3s,transform .3s}
+#ticker.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#ticker b{color:#7b2ff7}
+#ticker:before{content:'🎙️ ';}
+/* controls */
+#controls{position:fixed;left:50%;transform:translateX(-50%);width:min(100%,620px);bottom:0;padding:0 16px calc(env(safe-area-inset-bottom) + 16px);display:flex;justify-content:space-between;align-items:flex-end;z-index:5;pointer-events:none}
+.cbtn{pointer-events:auto;border:none;border-radius:50%;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Russo One',Rubik;position:relative;touch-action:none}
+#bFlash{width:118px;height:118px;font-size:50px;background:radial-gradient(circle at 35% 30%,#c58cff,#7b2ff7 55%,#4a128f);box-shadow:0 8px 0 #2d0a5c,0 12px 26px rgba(0,0,0,.5),inset 0 -6px 12px rgba(0,0,0,.25);border:4px solid #fff}
+#bFlash span{font-size:12px;margin-top:-4px;letter-spacing:.5px}
+#bFlash.on{transform:translateY(6px) scale(.96);box-shadow:0 2px 0 #2d0a5c,0 6px 14px rgba(0,0,0,.5)}
+#bFlash.dis{filter:grayscale(1) brightness(.7)}
+#rightCol{display:flex;flex-direction:column;align-items:center;gap:12px}
+#bShow{width:76px;height:76px;font-size:30px;background:radial-gradient(circle at 35% 30%,#ffe9a8,#ff9f1c 55%,#c2410c);box-shadow:0 6px 0 #7c2d12,0 10px 20px rgba(0,0,0,.45);border:3px solid #fff;filter:grayscale(.85) brightness(.75);transition:filter .3s}
+#bShow span{font-size:10px;margin-top:-2px}
+#bShow.ready{filter:none;animation:showPulse .7s infinite alternate}
+@keyframes showPulse{to{transform:scale(1.1);box-shadow:0 6px 0 #7c2d12,0 0 30px 8px rgba(255,200,0,.8)}}
+#showRing{position:absolute;inset:-8px;border-radius:50%;background:conic-gradient(#ffcc00 var(--p,0%),rgba(255,255,255,.12) 0);-webkit-mask:radial-gradient(circle,transparent 58%,#000 60%);mask:radial-gradient(circle,transparent 58%,#000 60%);pointer-events:none}
+#bFlash.danger{background:radial-gradient(circle at 35% 30%,#ff9a9a,#e11d48 55%,#7f1d1d);box-shadow:0 8px 0 #4c0519,0 0 26px 6px rgba(255,0,60,.6)}
+#tip{position:fixed;left:50%;transform:translateX(-50%) translateY(10px);bottom:calc(env(safe-area-inset-bottom) + 150px);width:min(86vw,440px);background:#ffe14d;color:#2a0e4a;font-weight:800;font-size:16px;line-height:1.3;padding:12px 14px;border-radius:16px;border:3px solid #2a0e4a;box-shadow:0 8px 0 rgba(0,0,0,.25);text-align:center;z-index:8;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
+#tip.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#bDone{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top) + 170px);z-index:9;font-family:'Russo One',Rubik;font-size:17px;border:none;border-radius:16px;padding:12px 18px;color:#1d0838;background:linear-gradient(#e2ff7a,#a6ff00);box-shadow:0 6px 0 #5a8a00,0 10px 22px rgba(0,0,0,.4);animation:showPulse .8s infinite alternate}
+#bHide{width:88px;height:88px;font-size:36px;background:radial-gradient(circle at 35% 30%,#fff9d6,#d8c98f 60%,#8f8150);box-shadow:0 7px 0 #5e5330,0 10px 22px rgba(0,0,0,.45);border:4px solid #fff;color:#3b2f10}
+#bHide span{font-size:10px;margin-top:-2px}
+#bHide.on{transform:translateY(5px);box-shadow:0 2px 0 #5e5330}
+#hideRing{position:absolute;inset:-9px;border-radius:50%;background:conic-gradient(#a6ff00 var(--p,100%),rgba(255,255,255,.12) 0);-webkit-mask:radial-gradient(circle,transparent 58%,#000 60%);mask:radial-gradient(circle,transparent 58%,#000 60%);pointer-events:none}
+#topBtns{position:fixed;right:max(12px,calc(50% - 298px));top:calc(env(safe-area-inset-top) + 64px);display:flex;gap:8px;z-index:7}
+.sbtn{width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.3);background:rgba(20,8,40,.7);color:#fff;font-size:18px}
+/* screens */
+.screen{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top) + 20px) 22px calc(env(safe-area-inset-bottom) + 20px);text-align:center;background:radial-gradient(ellipse at 50% 30%,rgba(123,47,247,.55),rgba(26,11,46,.94) 70%);overflow-y:auto;touch-action:pan-y}
+.screen.clear{background:rgba(10,4,24,.55)}
+.btn{pointer-events:auto;font-family:'Russo One',Rubik;font-size:22px;border:none;border-radius:20px;padding:16px 28px;color:#1d0838;background:linear-gradient(#e2ff7a,#a6ff00);box-shadow:0 7px 0 #5a8a00,0 12px 24px rgba(0,0,0,.4);margin:8px;min-width:230px;letter-spacing:.5px}
+.btn:active{transform:translateY(5px);box-shadow:0 2px 0 #5a8a00}
+.btn.pink{background:linear-gradient(#ff8cc0,#ff2e88);color:#fff;box-shadow:0 7px 0 #8f0b45,0 12px 24px rgba(0,0,0,.4)}
+.btn.blue{background:linear-gradient(#7fd3ff,#229ed9);color:#fff;box-shadow:0 7px 0 #0f5f87,0 12px 24px rgba(0,0,0,.4)}
+.btn.green{background:linear-gradient(#7af5a0,#25d366);color:#fff;box-shadow:0 7px 0 #0f7a37,0 12px 24px rgba(0,0,0,.4)}
+.btn.ghost{background:rgba(255,255,255,.12);color:#fff;box-shadow:none;border:2px solid rgba(255,255,255,.3);font-size:17px;padding:12px 20px}
+.card .btn.ghost{color:#4a128f;border-color:#d9c8f5;background:#f6f0ff}
+.btn.sm{min-width:0;font-size:16px;padding:12px 16px;border-radius:16px}
+#logo{width:min(88vw,430px);filter:drop-shadow(0 10px 20px rgba(0,0,0,.5));animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-8px) rotate(-1.5deg)}}
+#titleDima{height:min(34vh,300px);margin:-6px 0 4px;filter:drop-shadow(0 12px 18px rgba(0,0,0,.5));animation:wiggle 1.6s ease-in-out infinite;transform-origin:bottom center}
+@keyframes wiggle{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg) translateY(-6px)}}
+.tag{font-size:14px;opacity:.85;margin:2px 0 10px;max-width:420px;line-height:1.35}
+.best{font-size:15px;color:#ffe14d;margin-bottom:6px}
+.card{background:rgba(255,255,255,.96);color:#24093f;border-radius:26px;padding:24px 22px;max-width:420px;width:100%;box-shadow:0 18px 50px rgba(0,0,0,.5);position:relative}
+.card h2{font-size:26px;margin-bottom:10px;color:#7b2ff7}
+.card p{font-size:17px;line-height:1.4;font-weight:500}
+.card .big{font-size:64px;margin-bottom:6px}
+.emo{font-size:30px;letter-spacing:4px;margin:8px 0}
+.dots{margin-top:14px;font-size:12px;letter-spacing:6px;color:#bbb}
+.lvlName{font-size:44px;line-height:1;text-shadow:0 5px 0 #4a128f,0 10px 30px rgba(0,0,0,.6);color:#c6ff3d;animation:slam .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes slam{from{transform:scale(3) rotate(-8deg);opacity:0}}
+.lvlNum{font-size:16px;letter-spacing:3px;opacity:.8;margin-bottom:8px}
+.lvlSub{font-size:18px;margin:14px 0 6px;max-width:400px;font-weight:700}
+.lvlQ{font-size:15px;opacity:.85;margin-bottom:16px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;text-align:left}
+.stats div{background:#f2eaff;border-radius:12px;padding:8px 10px;font-size:13px;font-weight:700;color:#4a128f}
+.stats b{display:block;font-size:22px;font-family:'Russo One';color:#24093f}
+#overTitle{font-size:38px;line-height:1.05;color:#ff2e88;margin:4px 0 6px}
+#overReason{font-size:16px;font-weight:700;margin-bottom:6px}
+#overScore{font-size:54px;color:#7b2ff7;line-height:1}
+#overRank{display:inline-block;margin:8px 0 2px;background:linear-gradient(90deg,#7b2ff7,#ff2e88);color:#fff;border-radius:999px;padding:6px 14px;font-size:16px}
+#overBest{font-size:14px;color:#8a6bb0;margin-top:4px;font-weight:700}
+.share{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:6px}
+/* mugshot */
+#mug{position:relative;height:200px;margin:-8px -8px 8px;border-radius:18px;overflow:hidden;background:repeating-linear-gradient(#e9e4d8 0 18px,#cfc8b6 18px 20px);display:flex;justify-content:center;align-items:flex-end}
+#mug img{height:190px;filter:grayscale(.2) contrast(1.05)}
+#mug .plate{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:#111;color:#fff;font-family:'Russo One';font-size:14px;padding:6px 12px;border-radius:6px;white-space:nowrap;border:2px solid #fff}
+#mug .flashfx{position:absolute;inset:0;background:#fff;animation:camflash .6s ease-out forwards}
+@keyframes camflash{from{opacity:1}to{opacity:0}}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 30px);transform:translateX(-50%);background:#24093f;color:#fff;padding:10px 18px;border-radius:12px;z-index:50;font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none}
+#toast.show{opacity:1}
+#rotate{position:fixed;inset:0;z-index:100;background:#1a0b2e;display:none;align-items:center;justify-content:center;text-align:center;font-size:20px;padding:30px}
+@media (orientation:landscape) and (max-height:500px){#rotate{display:flex}}
+#loader{position:fixed;inset:0;z-index:90;background:#1a0b2e;display:flex;align-items:center;justify-content:center;font-size:56px}
+#loader div{animation:wiggle .6s infinite}
+#loader{flex-direction:column}#ldHint{font-size:15px;line-height:1.4;max-width:320px;text-align:center;margin-top:24px;padding:0 16px;color:#fff;opacity:0;animation:ldShow .4s 5s forwards}#ldHint a{color:#c6ff3d;font-weight:700;word-break:break-all}#ldHint small{opacity:.6}@keyframes ldShow{to{opacity:1}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="hud" class="hidden">
+  <div class="row">
+    <div class="pill H" id="score"><small>ОЧКИ</small>0</div>
+    <div class="pill" id="hearts">❤️❤️❤️</div>
+    <div class="pill" id="stars"><span>⭐</span><span>⭐</span><span>⭐</span></div>
+  </div>
+  <div id="timerWrap"><div id="timer"></div></div>
+  <div id="bossWrap" class="hidden"><span>🎖️ ГЕНЕРАЛ БАКЛАЖАНОВ</span><div><i id="bossFill"></i></div></div>
+  <div id="subrow"><span class="pill" id="quota">План: 0 / 1000</span><span class="pill H hidden" id="combo">x1</span><span id="chips"></span></div>
+</div>
+<div id="ticker"></div>
+<div id="tip"></div>
+<button id="bDone" class="hidden">✅ ПЛАН ВЫПОЛНЕН — ДАЛЬШЕ ➜</button>
+<div id="topBtns" class="hidden"><button class="sbtn" id="bPause">⏸</button><button class="sbtn" id="bMute">🔊</button><button class="sbtn" id="bVo">🗣️</button></div>
+<div id="controls" class="hidden">
+  <button class="cbtn" id="bHide"><div id="hideRing"></div>📰<span>ГАЗЕТА</span></button>
+  <div id="rightCol"><button class="cbtn" id="bShow"><div id="showRing"></div>🎆<span>ШОУ</span></button><button class="cbtn" id="bFlash">🍆<span>ПОКАЗАТЬ</span></button></div>
+</div>
+
+<!-- TITLE -->
+<div class="screen" id="sTitle">
+  <img id="logo" alt="Баклажан Судьбы">
+  <img id="titleDima" alt="Дима">
+  <div class="tag">Дима. Плащ. Один баклажан.<br>Покажи тем, кому <b>зайдёт</b>. Не попадись <b>ментам</b>.</div>
+  <div class="best" id="titleBest"></div>
+  <button class="btn" id="bPlay">ИГРАТЬ 🍆</button>
+  <button class="btn ghost" id="bHow">Как играть</button>
+  <div class="tag" style="font-size:12px;opacity:.7;margin-top:2px">🎧 Со звуком — смешнее. Рассказчик и прохожие говорят голосом.</div>
+  <div class="tag" style="font-size:11px;opacity:.55;margin-top:10px">18+ по смыслу · 0+ по картинке · 7 локаций · финальный босс · ни один баклажан не пострадал</div>
+</div>
+
+<!-- TUTORIAL -->
+<div class="screen hidden" id="sTut"><div class="card" id="tutCard"></div></div>
+
+<!-- LEVEL INTRO -->
+<div class="screen clear hidden" id="sIntro">
+  <div class="lvlNum H" id="iNum">ЛОКАЦИЯ 1 / 4</div>
+  <div class="lvlName H" id="iName">ПАРК</div>
+  <div class="lvlSub" id="iSub"></div>
+  <div class="lvlQ" id="iQ"></div>
+  <button class="btn" id="bGo">ПОГНАЛИ!</button>
+</div>
+
+<!-- LEVEL DONE -->
+<div class="screen hidden" id="sDone"><div class="card">
+  <div class="big">🏆</div>
+  <h2 class="H">ЛОКАЦИЯ ЗАЧИЩЕНА</h2>
+  <p id="dQuip"></p>
+  <div class="stats" id="dStats"></div>
+  <button class="btn" id="bNext">ДАЛЬШЕ ➜</button>
+</div></div>
+
+<!-- PAUSE -->
+<div class="screen clear hidden" id="sPause"><div class="card">
+  <div class="big">⏸</div><h2 class="H">ПАУЗА</h2><p>Дима застегнулся и ждёт.</p><br>
+  <button class="btn" id="bResume">ПРОДОЛЖИТЬ</button><button class="btn ghost" id="bQuit">В меню</button>
+</div></div>
+
+<!-- GAME OVER -->
+<div class="screen hidden" id="sOver"><div class="card">
+  <div id="mug" class="hidden"><img id="mugImg" alt=""><div class="plate" id="mugPlate">ДИМА · СТ. 🍆 УК</div><div class="flashfx"></div></div>
+  <div class="big" id="overEmoji">💀</div>
+  <div class="H" id="overTitle">ЗАДЕРЖАН</div>
+  <div id="overReason"></div>
+  <div class="H" id="overScore">0</div>
+  <div class="H" id="overRank">Огурчик</div>
+  <div id="overBest"></div>
+  <div class="stats" id="oStats"></div>
+  <button class="btn" id="bRetry">🔁 С ЛОКАЦИИ 1</button>
+  <button class="btn" id="bAgain">ЕЩЁ РАЗ 🍆</button>
+  <div class="share">
+    <button class="btn blue sm" id="bTg">✈️ Telegram</button>
+    <button class="btn green sm" id="bWa">💬 WhatsApp</button>
+    <button class="btn pink sm" id="bShare">📤 Поделиться</button>
+  </div>
+  <button class="btn ghost sm" id="bMenu" style="margin-top:6px">В меню</button>
+</div></div>
+
+<div id="toast"></div>
+<div id="rotate"><div>📱↩️<br><br>Переверни телефон вертикально.<br>Диме так удобнее.</div></div>
+<div id="loader"><div>🍆</div><p id="ldHint">Если баклажан крутится дольше 5 секунд — ты открыл файл в режиме просмотра, там игры не работают.<br><br><b>Открой игру в Telegram:</b><br><a href="https://t.me/dimakonorbot?startapp" target="_blank" rel="noopener noreferrer">t.me/dimakonorbot</a><br><br><small>На компьютере файл открывается в любом браузере.</small></p></div>
+
+<script src="assets.js?v=10"></script>
+<script src="vo.js?v=10"></script>
+<script>
+const SHARE_URL = "https://dimakonor.github.io/dimakonorbot/";
+(()=>{
+'use strict';
+// ================= UTIL =================
+const $=id=>document.getElementById(id);
+const rand=(a,b)=>a+Math.random()*(b-a);
+const ri=(a,b)=>Math.floor(rand(a,b+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const TG=(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData)?Telegram.WebApp:null;
+const TG_LINK='https://t.me/dimakonorbot?startapp';
+if(TG){try{TG.ready();TG.expand();TG.disableVerticalSwipes&&TG.disableVerticalSwipes();TG.setHeaderColor&&TG.setHeaderColor('#1a0b2e');TG.setBackgroundColor&&TG.setBackgroundColor('#1a0b2e');TG.setBottomBarColor&&TG.setBottomBarColor('#1a0b2e');TG.lockOrientation&&TG.lockOrientation();TG.enableClosingConfirmation&&0}catch(e){}}
+function haptic(kind){try{if(!TG||!TG.HapticFeedback)return;if(kind==='ok')TG.HapticFeedback.notificationOccurred('success');else if(kind==='bad')TG.HapticFeedback.notificationOccurred('error');else TG.HapticFeedback.impactOccurred(kind||'medium')}catch(e){}}
+const store={get(k,d){try{const v=localStorage.getItem('bs_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('bs_'+k,JSON.stringify(v))}catch(e){}}};
+
+// ================= ASSETS =================
+const IMG={};
+let loaded=0;const names=Object.keys(ASSETS);
+names.forEach(n=>{const i=new Image();i.onload=i.onerror=()=>{if(++loaded===names.length)onLoaded()};i.src=ASSETS[n];IMG[n]=i;});
+
+// ================= CANVAS =================
+const cv=$('c'),ctx=cv.getContext('2d');
+const VW=720;let VH=1280,SC=1,OX=0,OY=0,DPR=1,GY=1000,BG={x:0,y:0,w:720,h:1260};
+function resize(){
+  const w=innerWidth,h=innerHeight;DPR=Math.min(devicePixelRatio||1,2);
+  VH=clamp(VW*h/w,1050,1700);SC=Math.min(w/VW,h/VH);OX=(w-VW*SC)/2;OY=(h-VH*SC)/2;
+  cv.width=Math.round(w*DPR);cv.height=Math.round(h*DPR);
+  const s=Math.max(VW/720,VH/1260);BG.w=720*s;BG.h=1260*s;BG.x=(VW-BG.w)/2;BG.y=(VH-BG.h)/2;
+  GY=Math.min(BG.y+BG.h*0.80,VH-150);
+}
+addEventListener('resize',resize);resize();
+
+// ================= AUDIO =================
+let AC=null,master,musicG,sfxG,muted=store.get('muted',false),noiseBuf=null;
+function initAudio(){
+  if(AC){if(AC.state==='suspended')AC.resume();return}
+  try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return}
+  master=AC.createGain();master.gain.value=muted?0:0.9;master.connect(AC.destination);
+  const comp=AC.createDynamicsCompressor();comp.connect(master);
+  musicG=AC.createGain();musicG.gain.value=0.38;musicG.connect(comp);
+  sfxG=AC.createGain();sfxG.gain.value=0.9;sfxG.connect(comp);
+  voG=AC.createGain();voG.gain.value=1.25;voG.connect(master);setTimeout(voPreload,300);
+  noiseBuf=AC.createBuffer(1,AC.sampleRate,AC.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+}
+const mtof=m=>440*Math.pow(2,(m-69)/12);
+function tone(f,dur,{type='sine',vol=.3,to=null,when=0,dest=null,attack=.005,curve='exp',vib=0,vibRate=6,filter=0}={}){
+  if(!AC)return;const t=AC.currentTime+when;const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(f,t);
+  if(to){curve==='exp'?o.frequency.exponentialRampToValueAtTime(Math.max(to,1),t+dur):o.frequency.linearRampToValueAtTime(to,t+dur)}
+  if(vib){const l=AC.createOscillator(),lg=AC.createGain();l.frequency.value=vibRate;lg.gain.value=vib;l.connect(lg);lg.connect(o.frequency);l.start(t);l.stop(t+dur+.05)}
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+attack);g.gain.exponentialRampToValueAtTime(.0008,t+dur);
+  let n=o;if(filter){const fl=AC.createBiquadFilter();fl.type='lowpass';fl.frequency.value=filter;o.connect(fl);n=fl}
+  n.connect(g);g.connect(dest||sfxG);o.start(t);o.stop(t+dur+.05);
+}
+function noise(dur,{vol=.3,type='bandpass',freq=1500,q=1,when=0,dest=null,to=null}={}){
+  if(!AC)return;const t=AC.currentTime+when;const s=AC.createBufferSource();s.buffer=noiseBuf;const f=AC.createBiquadFilter();f.type=type;f.frequency.setValueAtTime(freq,t);if(to)f.frequency.exponentialRampToValueAtTime(to,t+dur);f.Q.value=q;
+  const g=AC.createGain();g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0008,t+dur);s.connect(f);f.connect(g);g.connect(dest||sfxG);s.start(t,Math.random()*.5);s.stop(t+dur+.05);
+}
+const SFX={
+  boing(){tone(110,.16,{type:'triangle',vol:.45,to:820});tone(820,.35,{type:'sine',vol:.3,to:380,when:.15,vib:60,vibRate:22});noise(.25,{vol:.18,freq:600,to:3000,type:'bandpass'})},
+  yes(){[72,76,79,84].forEach((m,i)=>tone(mtof(m),.18,{type:'triangle',vol:.22,when:i*.06}));tone(1318,.25,{type:'square',vol:.07,when:.24});},
+  coin(){tone(988,.08,{type:'square',vol:.08});tone(1319,.3,{type:'square',vol:.08,when:.07})},
+  slap(){noise(.14,{vol:1,freq:1800,q:.6});tone(160,.18,{vol:.6,to:50})},
+  punch(){noise(.2,{vol:.9,type:'lowpass',freq:900});tone(90,.3,{vol:.8,to:35});},
+  whistle(){for(let k=0;k<2;k++){tone(2900,k?0.45:0.18,{type:'sine',vol:.22,when:k*.24,vib:160,vibRate:32})}},
+  siren(){for(let i=0;i<4;i++)tone(i%2?720:960,.3,{type:'sawtooth',vol:.09,when:i*.3,filter:2200})},
+  pickup(){tone(500,.3,{type:'sine',vol:.3,to:1900});tone(1000,.3,{type:'triangle',vol:.12,to:2600,when:.08})},
+  bark(){tone(420,.09,{type:'square',vol:.2,to:240,filter:1500});tone(460,.11,{type:'square',vol:.2,to:250,when:.14,filter:1500})},
+  combo(n){tone(mtof(72+Math.min(n,12)),.25,{type:'square',vol:.1});tone(mtof(79+Math.min(n,12)),.3,{type:'square',vol:.08,when:.08})},
+  fanfare(){[60,64,67,72,67,72].forEach((m,i)=>tone(mtof(m),i===5?.7:.16,{type:'sawtooth',vol:.12,when:[0,.15,.3,.45,.65,.8][i],filter:3000}))},
+  trombone(){[58,57,56].forEach((m,i)=>tone(mtof(m),.45,{type:'sawtooth',vol:.16,when:i*.5,filter:1400}));tone(mtof(55),1.4,{type:'sawtooth',vol:.16,when:1.5,filter:1400,vib:6,vibRate:5})},
+  cam(){noise(.08,{vol:.4,freq:4000,type:'highpass'});noise(.1,{vol:.25,freq:2500,when:.09})},
+  tick(){tone(1200,.04,{type:'square',vol:.06})},
+  hide(){noise(.25,{vol:.35,freq:2500,to:900,type:'bandpass'})},
+  wow(){tone(300,.5,{type:'sawtooth',vol:.1,to:600,filter:1800,vib:15,vibRate:8})}
+};
+// --- voice over ---
+let voOn=store.get('vo',true),voG=null;const VOC={},VOB={};let voNar=null,voNarQ=null,voNpc=null,voDuck=0;
+function voKey(t){return String(t).replace(/<[^>]+>/g,'').trim()}
+function voDecode(k){if(VOB[k])return VOB[k];if(!VO[k]||!AC)return null;
+  const b=atob(VO[k]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);
+  VOB[k]=new Promise(res=>{try{AC.decodeAudioData(u.buffer,buf=>{VOC[k]=buf;res(buf)},()=>res(null))}catch(e){res(null)}});return VOB[k]}
+function voPreload(){const ks=Object.keys(VO);let i=0;const step=()=>{for(let n=0;n<6&&i<ks.length;n++)voDecode(ks[i++]);if(i<ks.length)setTimeout(step,60)};step()}
+function duck(on){if(!musicG||!AC)return;voDuck+=on?1:-1;if(voDuck<0)voDuck=0;const t=AC.currentTime;musicG.gain.cancelScheduledValues(t);musicG.gain.setTargetAtTime(voDuck>0?.12:.38,t,.08)}
+function voStart(buf,ch,rate){const src=AC.createBufferSource();src.buffer=buf;src.playbackRate.value=rate||1;src.connect(voG);duck(true);let done=false;
+  const fin=()=>{if(done)return;done=true;duck(false)};src.onended=()=>{fin();if(ch==='nar'&&voNar&&voNar.src===src){voNar=null;if(voNarQ&&performance.now()-voNarQ.t<2500){const q=voNarQ;voNarQ=null;voPlay(q.k,'nar')}else voNarQ=null}};
+  src.start();return {src,fin,t:performance.now()}}
+function voPlay(text,ch){
+  if(!voOn||muted||!AC)return;const k=voKey(text);if(!VO[k])return;
+  const go=buf=>{if(!buf)return;
+    if(ch==='nar'){if(voNar){voNarQ={k,t:performance.now()};return}voNar=voStart(buf,'nar')}
+    else{if(voNpc){try{voNpc.src.stop()}catch(e){}voNpc.fin()}voNpc=voStart(buf,'npc',ch==='boss'?.97:1+Math.random()*.06-.03);const me=voNpc;me.src.addEventListener('ended',()=>{if(voNpc===me)voNpc=null})}};
+  if(VOC[k])go(VOC[k]);else{const pr=voDecode(k);pr&&pr.then(go)}
+}
+function voStopAll(){try{voNar&&voNar.src.stop()}catch(e){}try{voNpc&&voNpc.src.stop()}catch(e){}voNar=voNpc=voNarQ=null}
+// --- music ---
+const SONGS=[
+ {bpm:112,bass:[40,0,0,40,0,0,43,0,45,0,0,46,0,45,43,0,40,0,0,40,0,0,43,0,45,0,47,0,50,0,47,45],lead:[0,0,64,0,67,0,0,0,69,0,70,0,71,0,0,0,0,0,76,0,74,0,71,0,69,0,67,0,64,0,0,0],dr:'k...h.s.k.k.h.s.k...h.s.k.k.hss.'},
+ {bpm:120,bass:[38,0,38,0,50,0,38,0,41,0,41,0,53,0,41,0,43,0,43,0,55,0,43,0,45,0,44,0,43,0,41,0],lead:[62,0,0,65,0,0,69,0,0,0,68,0,69,0,0,0,62,0,0,65,0,0,70,0,69,0,67,0,65,0,0,0],dr:'k.h.s.h.k.k.s.h.k.h.s.h.k.k.s.ss'},
+ {bpm:100,bass:[48,0,0,48,0,0,48,0,53,0,0,53,0,0,53,0,55,0,0,55,0,0,55,0,53,0,0,52,0,0,50,0],lead:[72,0,76,0,79,0,76,0,77,0,0,76,74,0,72,0,74,0,76,0,79,0,81,0,79,0,77,0,76,0,74,0],dr:'k..hs..hk.k.s..hk..hs..hk.k.s.hs'},
+ {bpm:128,bass:[45,0,57,0,45,0,57,0,45,0,57,0,45,0,57,0,41,0,53,0,41,0,53,0,43,0,55,0,43,0,55,0],lead:[69,0,0,72,0,0,76,0,0,0,74,0,72,0,0,0,69,0,0,72,0,0,77,0,76,0,74,0,72,0,0,0],dr:'k.hhk.hhk.hhk.hhk.hhk.hhk.hhkshh'}
+,
+ {bpm:136,bass:[33,0,33,0,45,0,33,0,36,0,36,0,48,0,36,0,31,0,31,0,43,0,31,0,32,0,32,0,44,0,40,0],lead:[69,0,69,0,72,0,69,0,76,0,0,0,75,0,72,0,69,0,69,0,72,0,69,0,68,0,0,0,71,0,68,0],dr:'k.s.k.s.k.s.kks.k.s.k.s.k.s.kssss'}
+];
+const Music={on:false,song:0,step:0,next:0,timer:null,
+  play(i){if(!AC)return;this.song=i;this.step=0;this.next=AC.currentTime+.1;this.on=true;if(!this.timer)this.timer=setInterval(()=>this.sched(),25)},
+  stop(){this.on=false},
+  sched(){if(!this.on||!AC)return;const S=SONGS[this.song],st=60/S.bpm/4;
+    while(this.next<AC.currentTime+.12){const i=this.step,w=this.next-AC.currentTime,c=S.dr[i];
+      if(c==='k'){tone(150,.14,{vol:.7,to:42,when:w,dest:musicG})}
+      if(c==='s'){noise(.13,{vol:.35,freq:1800,q:.7,when:w,dest:musicG});tone(190,.08,{vol:.2,to:120,when:w,dest:musicG})}
+      if(c==='h'||this.song===3&&c!=='s'&&i%2===1){noise(.035,{vol:.12,type:'highpass',freq:7500,when:w,dest:musicG})}
+      if(S.bass[i])tone(mtof(S.bass[i]),st*1.7,{type:this.song>=3?'sawtooth':'triangle',vol:.32,when:w,dest:musicG,filter:this.song>=3?900:1400});
+      if(S.lead[i])tone(mtof(S.lead[i]),st*1.3,{type:'square',vol:.055,when:w,dest:musicG,filter:3200});
+      this.step=(this.step+1)%32;this.next+=st;}
+  }
+};
+function setMute(m){muted=m;store.set('muted',m);$('bMute').textContent=m?'🔇':'🔊';if(master)master.gain.value=m?0:.9}
+
+// ================= CONTENT =================
+const LEVELS=[
+ {bg:'bg_park',song:0,name:'ПАРК ГОРЬКОГО',sub:'Где всё началось. Голуби видели всё.',quota:550,time:75,spawn:1.9,
+  mix:{girl:55,babushka:16,police:16,dog:7,tourist:6},start:['Дима вышел из дома. Город ещё не знает, что его ждёт.','Прогноз погоды: местами баклажаны.']},
+ {bg:'bg_market',song:2,name:'РЫНОК',sub:'Овощной ряд. Тут у баклажана конкуренты по 89₽ за кило.',quota:800,time:75,spawn:1.85,
+  mix:{girl:42,babushka:24,gopnik:12,police:14,dog:8},start:['Рынок. Бабушки торгуются, Дима — демонстрирует.','«Свежие баклажаны!» — кричит продавец. Дима обиделся.']},
+ {bg:'bg_metro',song:1,name:'МЕТРО',sub:'Осторожно, двери закрываются. Плащ — открывается.',quota:1050,time:75,spawn:1.8,
+  mix:{girl:45,babushka:10,police:18,undercover:9,gopnik:10,dog:3,tourist:5},start:['Станция «Баклажановская». Выход к приключениям.']},
+ {bg:'bg_beach',song:2,name:'ПЛЯЖ',sub:'Тут все и так почти голые. Конкуренция бешеная.',quota:1350,time:75,spawn:1.65,
+  mix:{girl:40,blogger:12,police:17,undercover:9,tourist:10,gopnik:6,dog:6},start:['Пляж. Солнце, море и один очень уверенный в себе мужчина.']},
+ {bg:'bg_wedding',song:0,name:'СВАДЬБА',sub:'Тамада сказал: «А теперь сюрприз от друга жениха!»',quota:1650,time:75,spawn:1.55,
+  mix:{girl:34,bride:16,babushka:12,gopnik:10,police:14,undercover:10,blogger:4},start:['Горько! — кричат гости. Дима понял по-своему.','Конкурс от тамады. Дима вызвался первым.']},
+ {bg:'bg_club',song:3,name:'НОЧНОЙ КЛУБ',sub:'Фейсконтроль пройден, совесть — нет.',quota:1950,time:80,spawn:1.45,
+  mix:{girl:44,blogger:12,police:18,undercover:13,gopnik:8,babushka:5},start:['Клуб. Громко, темно, и Дима тут главный диджей.']},
+ {bg:'bg_redsquare',song:4,boss:true,name:'КРАСНАЯ ПЛОЩАДЬ',sub:'Финальный босс. Генерал Баклажанов лично выехал на задержание.',quota:0,time:110,spawn:1.7,
+  mix:{girl:52,tourist:18,police:8,undercover:8,babushka:7,blogger:7},start:['Красная площадь. Генерал уже здесь. Это личное.']}
+];
+const T={
+ girl:{imgs:['girl_a','girl_b','girl_c'],h:300,sp:[80,115],pts:120},
+ babushka:{imgs:['babushka'],h:272,sp:[50,70],pts:300},
+ gopnik:{imgs:['gopnik'],h:306,sp:[70,95],pts:350},
+ tourist:{imgs:['tourist'],h:296,sp:[60,85],pts:250},
+ blogger:{imgs:['blogger'],h:300,sp:[70,100],pts:400},
+ bride:{imgs:['bride'],h:300,sp:[55,80],pts:500},
+ police:{imgs:['police'],h:312,sp:[55,75],pts:0},
+ undercover:{imgs:['undercover'],h:310,sp:[65,85],pts:0},
+ dog:{imgs:['dog'],h:120,sp:[120,160],pts:0}
+};
+const HINT_YES=['😏','😍','🔥','🍆','😜','🤤','💋','👀','🥵'];
+const HINT_NO=['😤','🙄','🤢','📵','😡','🙅‍♀️','🤬','☎️','💅'];
+const SAY={
+ girlYes:['ОГО!','Вау, баклажанчик!','Ещё!!!','Мама, я влюбилась','Это органик?','Скинь в личку 😏','Беру два!','Наконец-то мужчина!','Это лучшее, что я видела сегодня','Можно потрогать? Шучу!'],
+ girlNo:['ФУ!!!','Извращенец!','Я звоню 112!','Серьёзно?!','Мужчина!!!','Иди лечись!','Я маме расскажу!','Это даже не смешно','Мелко!'],
+ babYes:['Ох, молодёжь!','Как у деда в 74-м!','Ну-ка ещё разок!','Внучок, дай телефончик'],
+ babNo:['Хулиган!','Батоном получишь!','Я в ЖЭК напишу!','Тьфу на тебя!'],
+ gopYes:['Уважаю, братан','Где такой брал?','Чётко, чё','Пацаны не поверят'],
+ gopNo:['Слышь!','Ты чё, а?!','С какого района?!','Ну всё, держись'],
+ tourist:['WOW! RUSSIA!','Instagram!!!','Oh my god!','Is it legal?!','Very big vegetable!'],
+ blogYes:['Чат, вы видели?!','Донат 500₽!','Это в рилс!','Подписывайтесь на Диму!'],
+ blogNo:['Бан!','Репорт!','Минус подписка!','Это кринж!'],
+ copSee:['ГРАЖДАНИН!','Стоять!','Предъявите... ой.','Это что за баклажан?!','Протокол!'],
+ copCatch:['Попался, овощевод!','Ещё раз — посажу!','Пройдёмте!'],
+ copLost:['Хм... газета?','Где он?','Показалось...','Опять голуби...'],
+ brideYes:['Горько!!!','Я передумала выходить замуж!','Это лучше, чем жених!','Бросаю букет ТЕБЕ!'],
+ brideNo:['МОЙ ДЕНЬ!!!','Испортил свадьбу!','ВАСЯ, БЕЙ ЕГО!','Это не тот подарок!'],
+ genSee:['ГРАЖДАНИН ДИМА!!!','Я ВСЁ ВИЖУ!','ПРЕКРАТИТЬ БАКЛАЖАНИТЬ!','Это ПРОВОКАЦИЯ!','НА ПЛОЩАДИ?! ПРИ МНЕ?!'],
+ genHurt:['Что там происходит?!','Мои нервы!..','Почему все хлопают?!','Я требую тишины!','Кто смеётся?!','У меня давление!'],
+ genBack:['АЙ! ЧТО СЗАДИ?!','Мне показалось...','Кто здесь?!'],
+ genStun:['Это... это...','Я... 30 лет в органах...','Мама...'],
+ genWin:['...ВЕЛИКОЛЕПНО.','Я ухожу на пенсию.','Награждаю медалью!'],
+ under:['ПОПАЛСЯ! Я майор!','Сюрприз, я из органов!','Это подстава, дружок!'],
+ dog:['Гав!','*хрум*','Ням!']
+};
+const NAR={
+ start:['Дима вышел из дома. Город ещё не знает, что его ждёт.','Прогноз погоды: местами баклажаны.','Дима застегнул плащ. Ненадолго.','Минздрав предупреждает: сейчас будет мощно.'],
+ yes:['Она в восторге. Мама Димы — нет.','Рейтинг Димы в районе растёт.','Искусство требует зрителей. Зритель доволен.','Камера на столбе тоже оценила.','Это был стратегический баклажан.','Дима сеет добро. Фиолетовое.'],
+ no:['Это была ошибка. И пощёчина.','Она не оценила. Искусство требует жертв.','Минус щека.','Дима, ну там же было написано 😤…','Не всем дано понять авангард.','Критики были беспощадны.'],
+ babYes:['Бабуля вспомнила молодость. И 1974 год.','Бабуля одобряет. Дед — нет.'],
+ babNo:['Бабуля огрела батоном. Свежим, к счастью.','Бабушка — 1, Дима — 0.'],
+ gopYes:['Гопник: «Уважаю». Неожиданно.','Пацанское одобрение получено.'],
+ gopNo:['Гопник: «Чё?!» Дальше без комментариев.','Дима познакомился с кулаком района.'],
+ tourist:['Видео уже в TikTok. 2 млн просмотров.','Турист увезёт это воспоминание в Огайо.'],
+ blogYes:['Стрим взорвался. Дима теперь инфлюенсер.','+100К подписчиков. Мама в шоке.'],
+ blogNo:['Стрим увидели все. Включая полицию.'],
+ cop:['Сержант увидел ВСЁ.','Полицейский радар засёк баклажан.','Дима, это был мент. Мент, Дима.','Протокол уже пишется.'],
+ under:['Это был майор в парике. Классика.','Усы, Дима. У неё были УСЫ.'],
+ dog:['Собака украла баклажан. Иронично.','Пёс убегает с самым ценным.'],
+ dogBack:['Баклажан возвращён владельцу!'],
+ hide:['Дима прикинулся газетой. Гениально.','Читаем прессу. Ничего не показываем.'],
+ lost:['Мент ушёл ни с чем. Пресса спасает жизни.'],
+ combo:['КОМБО! Дима в ударе.','Остановите его. Хотя нет, продолжайте.','Это уже не хулиганство, это карьера.','Дима — легенда района.'],
+ calm:['Ментовский интерес спадает…','Розыск понижен. Можно снова шалить.'],
+ power:{cologne:'Одеколон «Шипр»: неотразим 7 секунд!',glasses:'Тёмные очки: менты видят хуже.',gold:'ЗОЛОТОЙ БАКЛАЖАН! Очки ×2!',shawarma:'Шаурма! +1 жизнь. Вкусно и сомнительно.',bribe:'Взятка: −1 звезда. Мы ничего не видели.'},
+ bride:['Невеста в восторге. Жених в шоке. Тамада в деле.','Свадьбу запомнят. Все. Навсегда.'],
+ brideNo:['Жених вышел из-за стола. Это плохо.','Невеста бросила не букет, а стул.'],
+ boss:{intro:'Генерал Баклажанов: «Я ЛИЧНО займусь этим овощеводом!»',p2:'Генерал вызвал подкрепление. Нервы сдают!',p3:'Генерал вызвал ВСЕХ. Даже майора в платье.',stun:'Генерал поплыл! ДОБИВАЙ — ПОКАЖИ ЕМУ!',miss:'Генерал пришёл в себя. Он злой.',win:'Генерал повержен баклажаном. Красная площадь аплодирует.',back:'Из-за спины! Генерал вздрогнул.',mega:'МЕГАФОН! Все мысли перепутались!'},
+ call:['Она звонит в полицию. Наряд уже едет.'],
+ time:['10 секунд! Шевелись, Дима!']
+};
+const RANKS=[[0,'Стеснительный огурчик'],[600,'Кабачок-любитель'],[1500,'Баклажан районного масштаба'],[3000,'Гроза парков'],[5000,'Легенда метрополитена'],[8000,'Баклажановый барон'],[12000,'Баклажановый ИМПЕРАТОР'],[18000,'ГЕНЕРАЛИССИМУС БАКЛАЖАНА']];
+const rankOf=s=>{let r=RANKS[0][1];for(const[k,v]of RANKS)if(s>=k)r=v;return r};
+const POWERS={cologne:{e:'🧴',w:3},glasses:{e:'🕶️',w:3},gold:{e:'🌟',w:3},shawarma:{e:'🌯',w:2},bribe:{e:'💸',w:2}};
+
+// ================= STATE =================
+let maxLvl=0,G=null,state='load',lastT=0,hiScore=store.get('best',0);
+const input={flash:false,hide:false,tx:null,keys:{}};
+function newRun(){
+  G={lvl:0,score:0,stats:{shown:0,liked:0,slaps:0,busts:0,maxCombo:0},hearts:3,showM:0,tips:{}};startLevel(0);G.peds=[];
+}
+function startLevel(i){
+  G.lvl=i;const L=LEVELS[i];
+  Object.assign(G,{lscore:0,time:L.time,stars:0,calm:0,combo:0,peds:[],parts:[],floats:[],pows:[],
+    fx:{cologne:0,glasses:0,gold:0,show:0},target:null,inCone:false,spawnT:1.2,powT:rand(9,14),copT:7,callT:0,shake:0,slow:0,flashW:0,busting:0,overSoon:0,scramble:0,winT:0,warned:false,boss:null,
+    d:{x:VW/2,tx:VW/2,dir:1,moving:false,flashing:false,ft:0,cool:0,hide:false,stam:4,pose:null,poseT:0,idle:0,stun:0,noEgg:0,seen:false,hits:0,walkT:0}});
+  if(L.boss)G.boss={x:VW+180,dir:-1,nerve:100,phase:1,st:'enter',turnT:4,warn:0,stunT:0,say:null,sayT:0,ph:0,megaT:12,hurtT:0};
+  input.tx=null;
+}
+
+// ================= SPAWN =================
+function wpick(mix){let tot=0;for(const k in mix)tot+=mix[k];let r=Math.random()*tot;for(const k in mix){r-=mix[k];if(r<=0)return k}return 'girl'}
+function spawn(type){
+  const t=T[type],dir=Math.random()<.5?1:-1,front=Math.random()<.5;
+  const p={type,img:pick(t.imgs),dir,x:dir>0?-130:VW+130,y:GY+(front?28:-30),sc:front?1:.88,sp:rand(...t.sp)*(1+G.lvl*.06),
+    st:'walk',t:0,ev:false,hintT:0,say:null,sayT:0,ph:Math.random()*9,entered:false,chase:0,carry:false};
+  if(type==='dog')p.y=GY+44,p.sc=1;
+  // mood & hint
+  const lv=G.lvl;
+  if(type==='girl'){p.like=Math.random()<(lv<2?.62:.55);p.hint=p.like?pick(HINT_YES):pick(HINT_NO);if(lv>=3&&Math.random()<.18){p.blind=true;p.like=Math.random()<.5;p.hint='🎧'}}
+  else if(type==='babushka'){p.like=Math.random()<.38;p.hint=p.like?pick(['😏','💃','🍷']):pick(['😠','🥖','✝️'])}
+  else if(type==='gopnik'){p.like=Math.random()<.2;p.hint=p.like?'🤝':pick(['😠','🌻','👊'])}
+  else if(type==='tourist'){p.like=true;p.hint='📸'}
+  else if(type==='blogger'){p.like=Math.random()<.6;p.hint=p.like?pick(['🔴','🤳','💖']):pick(['🚫','👎','🤮'])}
+  else if(type==='undercover'){p.like=false;p.hint=pick(['😍','💋','😏'])}
+  else if(type==='dog'){p.hint='🦴'}
+  else if(type==='bride'){p.like=Math.random()<.5;p.hint=p.like?pick(['💍','🥂','😜','💋']):pick(['😭','🤵','🔪','😤'])}
+  else if(type==='police'){p.hint='👮';p.cone=330+lv*25}
+  G.peds.push(p);return p;
+}
+
+// ================= HELPERS =================
+let tipT=null;
+function tip(key,txt,always){if(!G||G.tips[key])return;if(!always&&G.lvl>0)return;G.tips[key]=1;const e=$('tip');e.innerHTML=txt;e.classList.add('show');clearTimeout(tipT);tipT=setTimeout(()=>e.classList.remove('show'),4200)}
+function startShow(){if(G.showM<100||G.fx.show>0||state!=='play')return;G.showM=0;G.fx.show=6;G.flashW=.5;G.shake=14;G.slow=.4;SFX.fanfare();haptic('ok');
+  nar('<b>БАКЛАЖАН-ШОУ!</b> Шесть секунд всеобщего восторга. Менты аплодируют.');burst(G.d.x,GY-250,['🎆','🎉','💜','⭐','🍆','✨'],22,520,40);
+  if(G.boss&&G.boss.st==='patrol')bossDmg(25,' ШОУ!')}
+function say(p,arr){p.say=pick(arr);p.sayT=1.6;voPlay(p.say,'npc')}
+let tickT=null;
+function nar(arr,force){const el=$('ticker');el.innerHTML=typeof arr==='string'?arr:pick(arr);voPlay(el.innerHTML,'nar');el.classList.add('show');clearTimeout(tickT);tickT=setTimeout(()=>el.classList.remove('show'),2800)}
+function floatTxt(x,y,txt,col='#c6ff3d',size=46){G.floats.push({x,y,txt,col,size,life:1.3,max:1.3})}
+function burst(x,y,emojis,n=8,spd=320,size=34){for(let i=0;i<n;i++){const a=rand(-Math.PI,0),s=rand(spd*.4,spd);G.parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,e:pick(emojis),size:rand(size*.7,size*1.2),life:rand(.8,1.4),max:1.4,r:rand(-1,1),vr:rand(-4,4),g:600})}}
+function vibrate(p){if(TG){haptic(Array.isArray(p)&&p.length>3?'bad':'heavy');return}try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+function setPose(name,t){G.d.pose=name;G.d.poseT=t}
+function mult(){return Math.min(5,1+Math.floor(G.combo/3)*.5)}
+function addScore(base,x,y,extra=''){
+  const m=mult()*(G.fx.gold>0?2:1);const pts=Math.round(base*m/10)*10;G.score+=pts;G.lscore+=pts;
+  floatTxt(x,y,'+'+pts+(m>1?'  ×'+m:'')+extra,G.fx.gold>0?'#ffd700':'#c6ff3d');return pts;
+}
+function addStar(n,why){
+  if(G.busting)return;const now=performance.now();if(n<2&&now-(G.lastStar||0)<1500)return;G.lastStar=now;G.stars=Math.min(3,G.stars+n);G.calm=11;SFX.siren();G.shake=Math.max(G.shake,10);
+  if(G.stars>=3){G.busting=1.6;G.stats.busts++;Music.stop();nar('<b>3 ЗВЕЗДЫ.</b> Приехал автозак. Дима, это конец.');vibrate([100,60,100,60,300])}
+}
+function hurt(p,heavy){
+  G.hearts--;G.stats.slaps++;G.combo=0;G.shake=heavy?26:18;G.flashW=.35;vibrate(heavy?[60,40,120]:80);
+  heavy?SFX.punch():SFX.slap();burst(G.d.x,GY-220,heavy?['💥','⭐','🦷']:['💥','✋','💢'],7,380,38);
+  setPose('facepalm',1.1);G.d.stun=heavy?1.1:.45;floatTxt(G.d.x,GY-360,heavy?'ПО ЩАМ!':'ПОЩЁЧИНА!','#ff2e88',44);
+  // scream → police
+  const cop=G.peds.find(q=>q.type==='police'&&q.st==='walk'&&q.x>0&&q.x<VW);
+  if(cop){copSee(cop)}else if(!G.callT){G.callT=2.2;setTimeout(()=>state==='play'&&nar(NAR.call),900)}
+  if(G.hearts<=0){G.overSoon=1.2;Music.stop()}
+}
+function copSee(cop){
+  if(cop.st==='chase')return;cop.st='chase';cop.chase=4.5;say(cop,SAY.copSee);SFX.whistle();addStar(1);nar(NAR.cop);
+}
+
+// ================= EVALUATE FLASH =================
+function evaluate(p){
+  p.ev=true;const d=G.d,x=p.x,y=p.y-T[p.type].h*p.sc;
+  if(p.type==='dog'&&G.fx.show>0){p.st='leave';p.sp=260;say(p,['Гав! 🎉']);return}
+  if(p.type==='dog'){
+    d.noEgg=7;p.st='steal';p.carry=true;p.dir=p.x<d.x?-1:1;p.sp=200;say(p,SAY.dog);SFX.bark();nar(NAR.dog);d.flashing=false;setPose('what',1.2);G.combo=0;
+    floatTxt(p.x,p.y-160,'УКРАЛ!','#ffb000',40);return;
+  }
+  if(p.type==='police'){if(G.fx.show>0){p.st='react';p.t=.9;p.after='leave';say(p,['Браво!','Уважаю, гражданин!','Ну артист!']);addScore(200,x,y-10,' МЕНТ В ВОСТОРГЕ');burst(x,y+40,['👏','⭐'],8,300);return}copSee(p);return}
+  G.stats.shown++;
+  if(p.type==='undercover'&&G.fx.show<=0){
+    p.st='react';p.t=1;say(p,SAY.under);SFX.whistle();setPose('facepalm',1.4);G.combo=0;nar(NAR.under);
+    floatTxt(x,y-20,'ПОДСТАВА!','#ff2e88',48);addStar(2);p.after='chase';return;
+  }
+  const like=p.like||G.fx.show>0||(G.fx.cologne>0&&p.type!=='tourist');
+  if(like){
+    G.combo++;G.stats.liked++;G.stats.maxCombo=Math.max(G.stats.maxCombo,G.combo);
+    let extra='';if(p.blind)extra=' РИСК!';
+    const base=(T[p.type].pts||150)*(p.blind?2:1)*(G.fx.show>0?2:1);addScore(base,x,y-10,extra);G.showM=Math.min(100,G.showM+(G.fx.show>0?0:20));if(G.showM>=100)tip('show','🎆 <b>ШОУ заряжено!</b> Жми оранжевую кнопку — 6 секунд все в восторге, даже менты.',true);
+    SFX.yes();setTimeout(SFX.coin,120);haptic('ok');
+    burst(x,y+40,p.type==='tourist'?['📸','✨','🌟']:p.type==='blogger'?['❤️','👍','🔥','💬']:['❤️','💖','😍','💸','💋'],10,360);
+    p.st='react';p.t=.9;p.after='leave';
+    d.hits++;setPose(pick(['thumb','dance']),1);
+    if(G.boss)bossDmg(5+Math.min(G.combo,8)*.4,'');
+    if(p.type==='girl'){say(p,SAY.girlYes);if(Math.random()<.35)nar(NAR.yes)}
+    if(p.type==='babushka'){say(p,SAY.babYes);nar(NAR.babYes);floatTxt(x,y-70,'БАБУЛЯ ОДОБРЯЕТ','#ffe14d',34)}
+    if(p.type==='gopnik'){say(p,SAY.gopYes);nar(NAR.gopYes)}
+    if(p.type==='tourist'){say(p,SAY.tourist);nar(NAR.tourist);SFX.cam();G.flashW=.25;floatTxt(x,y-70,'ВИРУСНОЕ ВИДЕО','#7fd3ff',34);if(Math.random()<.5){G.stars=Math.min(2.99,G.stars+.5);G.calm=11}}
+    if(p.type==='bride'){say(p,SAY.brideYes);nar(NAR.bride);floatTxt(x,y-70,'БУКЕТ ТВОЙ!','#ffe14d',34);burst(x,y,['💐','🥂','💍'],6)}
+    if(p.type==='blogger'){say(p,SAY.blogYes);nar(NAR.blogYes);floatTxt(x,y-70,'+100К ПОДПИСЧИКОВ','#ff8cc0',32)}
+    if(G.combo>0&&G.combo%4===0){SFX.combo(G.combo);nar(NAR.combo);G.slow=.35;$('combo').classList.remove('pop');void $('combo').offsetWidth;$('combo').classList.add('pop')}
+  }else{
+    p.st='react';p.t=.7;p.after='flee';
+    if(p.type==='girl'){say(p,SAY.girlNo);nar(NAR.no)}
+    if(p.type==='babushka'){say(p,SAY.babNo);nar(NAR.babNo)}
+    if(p.type==='gopnik'){say(p,SAY.gopNo);nar(NAR.gopNo)}
+    if(p.type==='bride'){say(p,SAY.brideNo);nar(NAR.brideNo)}
+    if(p.type==='blogger'){say(p,SAY.blogNo);nar(NAR.blogNo);G.stars=Math.min(2.99,G.stars+.5);G.calm=11}
+    hurt(p,p.type==='gopnik'||p.type==='bride');
+  }
+}
+
+// ================= BOSS =================
+function bsay(arr){const b=G.boss;b.say=pick(arr);b.sayT=1.8;voPlay(b.say,'boss')}
+function bossDmg(n,label){
+  const b=G.boss;if(!b||b.st==='stun'||b.st==='beaten'||b.st==='enter')return;
+  b.nerve=Math.max(0,b.nerve-n);b.hurtT=.4;floatTxt(b.x,GY-470,'−'+Math.round(n)+' НЕРВОВ'+(label||''),'#ff8cc0',30);
+  if(Math.random()<.5)bsay(SAY.genHurt);
+  if(b.phase===1&&b.nerve<=66){b.phase=2;SFX.whistle();nar(NAR.boss.p2);bsay(['ПОДКРЕПЛЕНИЕ!!!']);for(let k=0;k<2;k++){const c=spawn('police');c.sp*=1.3}}
+  if(b.phase===2&&b.nerve<=33){b.phase=3;SFX.siren();nar(NAR.boss.p3);bsay(['ВСЕ НАРЯДЫ — СЮДА!!!']);spawn('police');spawn('undercover')}
+  if(b.nerve<=0){b.st='stun';b.stunT=7;G.d.flashing=false;G.d.cool=.6;SFX.wow();G.slow=.6;G.shake=20;nar(NAR.boss.stun);bsay(SAY.genStun);vibrate([80,40,80])}
+}
+function bossUpdate(dt){
+  const b=G.boss,d=G.d;b.ph+=dt;if(b.sayT>0)b.sayT-=dt;if(b.hurtT>0)b.hurtT-=dt;
+  const sp=55+b.phase*18,len=360+b.phase*60;b.len=len;
+  if(b.st==='enter'){b.x-=120*dt;if(b.x<=VW-150){b.st='patrol';bsay(['ГРАЖДАНИН ДИМА!','Я ЛИЧНО займусь вами!']);nar(NAR.boss.intro);SFX.whistle()}return}
+  if(b.st==='beaten'){return}
+  if(b.st==='stun'){b.stunT-=dt;
+    if(d.flashing&&Math.abs(d.x-b.x)<280){b.st='beaten';bsay(SAY.genWin);G.winT=2.6;G.slow=1.2;G.shake=30;G.flashW=.6;SFX.fanfare();SFX.boing();nar(NAR.boss.win);
+      burst(b.x,GY-300,['🎖️','🏅','⭐','💜','🍆','🎉'],26,520,40);const pts=addScore(2000,b.x,GY-520,' БОСС!');vibrate([100,50,100,50,400]);Music.stop();return}
+    if(b.stunT<=0){b.st='patrol';b.nerve=30;bsay(['Я ещё не закончил!']);nar(NAR.boss.miss);SFX.whistle()}return}
+  // patrol
+  if(b.warn>0){b.warn-=dt;if(b.warn<=0){b.dir*=-1}}
+  else{b.x+=b.dir*sp*dt;b.turnT-=dt;
+    if(b.x<120||b.x>VW-120){b.x=clamp(b.x,120,VW-120);b.warn=.5}
+    else if(b.turnT<=0){b.warn=.65-b.phase*.1;b.turnT=rand(2.5,5.5)-b.phase*.5}}
+  if(b.phase>=2){b.megaT-=dt;if(b.megaT<=0){b.megaT=rand(9,13);G.scramble=3;G.shake=14;SFX.siren();nar(NAR.boss.mega);bsay(['ВНИМАНИЕ! ГРАЖДАНЕ!','РАЗОЙДИСЬ!!!'])}}
+  if(G.scramble>0)G.scramble-=dt;
+  // vision / backstab
+  if(d.flashing&&!d.hide&&G.fx.show<=0){const fx=(d.x-b.x)*b.dir;
+    if(fx>-40&&fx<len&&b.warn<=0){if(!d.bseen){d.bseen=true;bsay(SAY.genSee);SFX.whistle();addStar(1);b.nerve=Math.min(100,b.nerve+4)}}
+    else if(fx<=-40&&fx>-260&&!d.bback){d.bback=true;bossDmg(9,' СЗАДИ!');nar(NAR.boss.back);bsay(SAY.genBack)}}
+}
+function drawBoss(){
+  const b=G.boss;if(!b)return;const stun=b.st==='stun'||b.st==='beaten',img=stun?IMG.general_shock:IMG.general,h=430;
+  const bob=stun?0:Math.abs(Math.sin(b.ph*7))*8,rot=stun?Math.sin(b.ph*5)*.08:Math.sin(b.ph*7)*.035;
+  const by=GY-38;shadow(b.x,by,110);
+  let sx=1;if(b.hurtT>0)sx=1+Math.sin(b.ph*60)*.05;
+  const near=Math.abs(b.x-G.d.x)<120&&!stun?.55:1;drawImg(img,b.x,by-bob,h,stun?false:b.dir<0,rot,sx,1,b.st==='beaten'?Math.max(.0,G.winT/2.6):near);
+  const top=by-h-10;
+  if(b.warn>0&&!stun){outlined('❗',b.x,top-10,60,'#ffcc00')}
+  if(stun){ctx.save();ctx.font='34px system-ui';ctx.textAlign='center';for(let i=0;i<4;i++){const a=b.ph*3+i*Math.PI/2;ctx.fillText(i%2?'⭐':'💫',b.x+Math.cos(a)*80,top+40+Math.sin(a)*22)}ctx.restore();
+    if(b.st==='stun')outlined('ПОКАЖИ ЕМУ! '+Math.ceil(b.stunT),VW/2,VH*.36,48,'#c6ff3d')}
+  if(b.sayT>0)speech(b.x,top-(b.warn>0?50:0),b.say);
+}
+function drawBossCone(){
+  const b=G.boss;if(!b||b.st!=='patrol'||b.warn>0)return;const d=G.d,len=b.len||400,fx=(d.x-b.x)*b.dir,inside=fx>-40&&fx<len&&!d.hide;
+  const c=inside?(d.flashing?'255,40,60':'255,120,40'):'255,60,60',x0=b.x+b.dir*40,y0=GY;
+  ctx.save();const g=ctx.createLinearGradient(x0,0,x0+b.dir*len,0);g.addColorStop(0,`rgba(${c},.7)`);g.addColorStop(1,`rgba(${c},.04)`);
+  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(x0,GY-330);ctx.lineTo(x0+b.dir*len,GY-420);ctx.lineTo(x0+b.dir*len,GY+60);ctx.lineTo(x0,GY+10);ctx.closePath();ctx.globalAlpha=.55;ctx.fill();
+  ctx.globalAlpha=1;ctx.setLineDash([12,8]);ctx.lineWidth=4;ctx.strokeStyle=`rgba(${c},.95)`;ctx.stroke();ctx.restore();
+}
+// ================= UPDATE =================
+function update(rdt){
+  let dt=rdt;if(G.slow>0){G.slow-=rdt;dt*=.35}
+  const d=G.d,L=LEVELS[G.lvl];
+  // end sequences
+  if(G.busting){G.busting-=rdt;G.shake=Math.max(G.shake,4);updParts(dt);if(G.busting<=0)gameOver('busted');return}
+  if(G.overSoon){G.overSoon-=rdt;updParts(dt);if(G.overSoon<=0)gameOver('beaten');return}
+  if(G.winT){G.winT-=rdt;updParts(dt);if(G.shake>0)G.shake=Math.max(0,G.shake-rdt*30);if(G.flashW>0)G.flashW-=rdt;if(G.winT<=0){G.winT=0;gameOver('win')}return}
+  // timer
+  G.time-=dt;if(G.time<=10&&!G.warned){G.warned=true;nar(NAR.time)}
+  if(G.time<=0){G.time=0;if(L.boss)gameOver('boss');else if(G.lscore>=L.quota)levelDone();else gameOver('quota');return}
+  if(G.boss)bossUpdate(dt);
+  for(const k in G.fx)if(G.fx[k]>0)G.fx[k]-=dt;
+  if(G.fx.show>0&&Math.random()<.5)G.parts.push({x:rand(0,VW),y:-20,vx:rand(-40,40),vy:rand(150,320),e:pick(['🎉','✨','💜','🎊','⭐']),size:rand(22,36),life:2.5,max:2.5,r:0,vr:rand(-3,3),g:60});
+  if(!L.boss&&G.lscore>=L.quota&&!G.doneShown){G.doneShown=true;$('bDone').classList.remove('hidden');tip('quota','✅ <b>План выполнен!</b> Жми зелёную кнопку сверху — или добивай очки, за оставшееся время дадут бонус.',true);SFX.combo(6)}
+  if(G.stars>0){G.calm-=dt;if(G.calm<=0){G.stars=Math.max(0,Math.ceil(G.stars)-1);G.calm=10;nar(NAR.calm)}}
+  // spawn
+  G.spawnT-=dt;if(G.spawnT<=0){const live=G.peds.length;if(live<7){spawn(wpick(L.mix))}G.spawnT=rand(L.spawn*.7,L.spawn*1.3)*(G.stars>=1?.85:1)}
+  G.copT-=dt;if(G.copT<=0){if(!G.peds.some(p=>p.type==='police'))spawn('police');G.copT=rand(9,14)-Math.min(G.lvl,4)*1.2-G.stars*2+(LEVELS[G.lvl].boss?6:0)}
+  if(G.callT){G.callT-=dt;if(G.callT<=0){G.callT=0;const c=spawn('police');c.sp*=1.6;}}
+  G.powT-=dt;if(G.powT<=0){G.powT=rand(12,18);spawnPow()}
+  // input keys
+  if(input.keys.ArrowLeft||input.keys.a){d.tx=d.x-60}else if(input.keys.ArrowRight||input.keys.d){d.tx=d.x+60}
+  if(input.tx!=null)d.tx=input.tx;
+  // dima
+  if(d.stun>0)d.stun-=dt;if(d.poseT>0)d.poseT-=dt;else d.pose=null;if(d.cool>0)d.cool-=dt;if(d.noEgg>0)d.noEgg-=dt;
+  d.hide=input.hide&&d.stam>0&&!d.flashing;
+  if(d.hide){d.stam-=dt;if(!d.wasHide){SFX.hide();if(Math.random()<.4)nar(NAR.hide)}}else d.stam=Math.min(4,d.stam+dt*.55);
+  d.wasHide=d.hide;
+  d.moving=false;
+  if(d.stun<=0){const dx=d.tx-d.x,sp=(d.hide?110:320)*(d.flashing?.45:1);if(Math.abs(dx)>6){d.x+=Math.sign(dx)*Math.min(Math.abs(dx),sp*dt);d.dir=Math.sign(dx);d.moving=true;d.walkT+=dt}}
+  d.x=clamp(d.x,70,VW-70);
+  // flash
+  const can=d.noEgg<=0&&!d.hide&&d.cool<=0&&d.stun<=0;
+  // target
+  {let best=null,bd=1e9;for(const p of G.peds){if(p.st!=='walk'||p.ev)continue;const ad=Math.abs(p.x-d.x),rg=(p.type==='dog'?200:255)*p.sc;if(ad<rg&&ad<bd){bd=ad;best=p}}G.target=best;if(best)tip('target','🎯 <b>Кружок под ногами = цель.</b> Над головой мысль: 😍🔥😏 — жми 🍆. 😤🙄🤢 — не надо, пусть идёт мимо.')}
+  // cone check
+  {let ic=false;for(const p of G.peds){if(p.type==='police'&&p.st==='walk'&&p.x>-20&&p.x<VW+20){const fx=(d.x-p.x)*p.dir,len=p.cone*(G.fx.glasses>0?.5:1);if(fx>-30&&fx<len)ic=true;tip('cop','👮 <b>Жёлтый луч — мент смотрит.</b> Стоишь в луче — не показывай! Отойди или зажми 📰 газету.')}}
+   const b=G.boss;if(b&&b.st==='patrol'&&b.warn<=0){const fx=(d.x-b.x)*b.dir;if(fx>-40&&fx<(b.len||400))ic=true}
+   G.inCone=ic&&!d.hide&&G.fx.show<=0}
+  if(input.flash&&can&&!d.flashing&&!G.target&&!(G.boss&&G.boss.st==='stun')){if(!d.noTgtT||d.noTgtT<=0){floatTxt(d.x,GY-360,'НЕКОМУ ПОКАЗАТЬ 🤷','#fff',30);tip('notgt','Подойди ближе к прохожему — под ним появится кружок 🎯, тогда жми 🍆.');d.noTgtT=1}}
+  if(d.noTgtT>0)d.noTgtT-=dt;
+  if(input.flash&&can&&!d.flashing&&(G.target||(G.boss&&G.boss.st==='stun'))){d.evals=0;haptic('medium');d.flashing=true;d.ft=0;d.seen=false;d.bseen=false;d.bback=false;d.hits=0;SFX.boing();G.slow=Math.max(G.slow,.1);G.shake=Math.max(G.shake,5)}
+  if(d.flashing){d.ft+=dt;if((!input.flash&&d.ft>.45)||d.ft>1.5||d.noEgg>0||d.hide||d.stun>0){d.cool=d.ft>1.5?.9:.35;d.flashing=false;if(d.ft>1.5)floatTxt(d.x,GY-360,'ПЕРЕДЫШКА','#fff',30)}}
+  // peds
+  for(const p of G.peds){
+    const t=T[p.type],dx=p.x-d.x,ad=Math.abs(dx);p.ph+=dt;
+    if(p.sayT>0)p.sayT-=dt;
+    if(ad<420)p.hintT+=dt;
+    if(p.x>-40&&p.x<VW+40)p.entered=true;
+    if(p.st==='walk'){p.x+=p.dir*p.sp*dt}
+    else if(p.st==='react'){p.t-=dt;if(p.t<=0){if(p.after==='chase'){p.st='chase';p.chase=4}else{p.st=p.after||'leave';p.dir=p.after==='flee'?(dx<0?-1:1):p.dir;p.sp*=p.after==='flee'?2.4:1.6}}}
+    else if(p.st==='leave'||p.st==='flee'){p.x+=p.dir*p.sp*dt}
+    else if(p.st==='chase'){p.chase-=dt;const dir=dx<0?1:-1;p.dir=dir;p.x+=dir*240*dt;
+      if(ad<60){if(d.hide){say(p,SAY.copLost);nar(NAR.lost)}else{say(p,SAY.copCatch);addStar(1);d.stun=.9;G.shake=16;SFX.punch();setPose('facepalm',1)}p.st='leave';p.dir=-dir;p.sp=150;}
+      else if(p.chase<=0){p.st='leave';p.dir=-dir;say(p,SAY.copLost)}}
+    else if(p.st==='steal'){p.x+=p.dir*p.sp*dt;if(ad<70&&p.carry){p.carry=false;d.noEgg=0;SFX.pickup();nar(NAR.dogBack);addScore(150,d.x,GY-330,' ВЕРНУЛ!');p.sp=360;burst(d.x,GY-200,['🍆','✨'],6)}}
+    // flash eval
+    if(d.flashing&&!p.ev&&p.st==='walk'&&ad<(p.type==='dog'?200:255)*p.sc&&(G.fx.show>0||(p===G.target&&!d.evals))){d.evals=(d.evals||0)+1;evaluate(p)}
+    // police vision
+    if(p.type==='police'&&p.st==='walk'&&d.flashing&&!d.hide&&!d.seen&&G.fx.show<=0){
+      const fx=(d.x-p.x)*p.dir,len=p.cone*(G.fx.glasses>0?.5:1);
+      if(fx>-30&&fx<len){d.seen=true;copSee(p)}
+    }
+  }
+  G.peds=G.peds.filter(p=>!(p.entered&&(p.x<-220||p.x>VW+220))&&!(p.x<-600||p.x>VW+600));
+  // powerups
+  for(const w of G.pows){
+    if(w.y<w.gy){w.vy+=900*dt;w.y+=w.vy*dt;if(w.y>=w.gy){w.y=w.gy;w.vy=0}}else w.life-=dt;
+    if(Math.abs(w.x-d.x)<70&&w.y>=w.gy-40&&!w.got){w.got=true;applyPow(w)}
+  }
+  G.pows=G.pows.filter(w=>!w.got&&w.life>0);
+  updParts(dt);
+  if(G.shake>0)G.shake=Math.max(0,G.shake-rdt*45);if(G.flashW>0)G.flashW-=rdt;
+}
+function updParts(dt){
+  for(const q of G.parts){q.vy+=q.g*dt;q.x+=q.vx*dt;q.y+=q.vy*dt;q.r+=q.vr*dt;q.life-=dt}G.parts=G.parts.filter(q=>q.life>0);
+  for(const f of G.floats){f.y-=70*dt;f.life-=dt}G.floats=G.floats.filter(f=>f.life>0);
+}
+function spawnPow(){
+  const opts=Object.keys(POWERS).filter(k=>!(k==='bribe'&&G.stars<1)&&!(k==='shawarma'&&G.hearts>=3));
+  let tot=0;opts.forEach(k=>tot+=POWERS[k].w);let r=Math.random()*tot,k=opts[0];for(const o of opts){r-=POWERS[o].w;if(r<=0){k=o;break}}
+  G.pows.push({k,x:rand(110,VW-110),y:-60,vy:0,gy:GY+40,life:8});
+}
+function applyPow(w){
+  SFX.pickup();burst(w.x,w.y-30,['✨','⭐',POWERS[w.k].e],8,300);nar(NAR.power[w.k]);
+  if(w.k==='cologne')G.fx.cologne=7;if(w.k==='glasses')G.fx.glasses=10;if(w.k==='gold')G.fx.gold=10;
+  if(w.k==='shawarma')G.hearts=Math.min(3,G.hearts+1);if(w.k==='bribe'){G.stars=Math.max(0,Math.ceil(G.stars)-1)}
+}
+
+// ================= RENDER =================
+function drawImg(img,x,yFeet,h,flip,rot=0,sx=1,sy=1,alpha=1){
+  if(!img||!img.width)return;const w=img.width*h/img.height;ctx.save();ctx.globalAlpha=alpha;ctx.translate(x,yFeet);ctx.rotate(rot);ctx.scale((flip?-1:1)*sx,sy);ctx.drawImage(img,-w/2,-h,w,h);ctx.restore();return w;
+}
+function shadow(x,y,w){ctx.save();ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();ctx.ellipse(x,y,w,w*.22,0,0,Math.PI*2);ctx.fill();ctx.restore()}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function bubble(x,y,emoji,s=1,col){
+  ctx.save();ctx.translate(x,y);ctx.scale(s,s);ctx.fillStyle=col==='y'?'#dcfce7':col==='n'?'#fee2e2':'#fff';ctx.strokeStyle=col==='y'?'#16a34a':col==='n'?'#dc2626':'#2a0e4a';ctx.lineWidth=col?6:4;
+  rr(-40,-70,80,66,26);ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.arc(-8,8,9,0,7);ctx.fill();ctx.stroke();ctx.beginPath();ctx.arc(-18,26,5,0,7);ctx.fill();ctx.stroke();
+  ctx.font='42px system-ui,"Apple Color Emoji","Segoe UI Emoji",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(emoji,0,-36);ctx.restore();
+}
+function speech(x,y,txt){
+  ctx.save();ctx.font='900 26px Rubik,system-ui,sans-serif';const w=Math.min(ctx.measureText(txt).width+30,420);x=clamp(x,w/2+8,VW-w/2-8);
+  ctx.fillStyle='#fff';ctx.strokeStyle='#111';ctx.lineWidth=4;rr(x-w/2,y-50,w,46,16);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#111';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,x,y-27,400);ctx.restore();
+}
+function outlined(txt,x,y,size,col,alpha=1){ctx.save();ctx.globalAlpha=alpha;ctx.font=`${size}px "Russo One",Rubik,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.lineWidth=size*.22;ctx.strokeStyle='#2a0e4a';ctx.strokeText(txt,x,y);ctx.fillStyle=col;ctx.fillText(txt,x,y);ctx.restore()}
+function drawCone(p){
+  const len=p.cone*(G.fx.glasses>0?.5:1),d=G.d,fx=(d.x-p.x)*p.dir,inside=fx>-30&&fx<len&&!d.hide;
+  const x0=p.x+p.dir*20,y0=p.y-6;ctx.save();
+  const g=ctx.createLinearGradient(x0,0,x0+p.dir*len,0);const c=inside?(d.flashing?'255,40,60':'255,120,40'):'255,230,80';
+  g.addColorStop(0,`rgba(${c},.75)`);g.addColorStop(1,`rgba(${c},.05)`);
+  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(x0,y0-8);ctx.lineTo(x0+p.dir*len,y0-60);ctx.lineTo(x0+p.dir*len,y0+46);ctx.closePath();ctx.fill();ctx.setLineDash([10,8]);ctx.lineWidth=3;ctx.strokeStyle=`rgba(${c},.9)`;ctx.stroke();ctx.setLineDash([]);
+  // eye beam from head
+  const hy=p.y-T.police.h*p.sc*.86;const g2=ctx.createLinearGradient(p.x,0,p.x+p.dir*len,0);g2.addColorStop(0,`rgba(${c},.22)`);g2.addColorStop(1,`rgba(${c},0)`);
+  ctx.fillStyle=g2;ctx.beginPath();ctx.moveTo(p.x+p.dir*20,hy);ctx.lineTo(p.x+p.dir*len,hy-70);ctx.lineTo(p.x+p.dir*len,y0+46);ctx.lineTo(x0,y0-8);ctx.closePath();ctx.fill();
+  ctx.restore();
+}
+function drawPed(p){
+  const t=T[p.type],h=t.h*p.sc,img=IMG[p.img],flip=p.dir<0;
+  const moving=p.st!=='react',run=p.st==='flee'||p.st==='chase'||p.st==='steal';
+  const bob=moving?Math.abs(Math.sin(p.ph*(run?16:9)))*(run?12:7):0,rot=moving?Math.sin(p.ph*(run?16:9))*.045:Math.sin(p.ph*30)*.03;
+  shadow(p.x,p.y,img.width*h/img.height*.36);
+  let sy=1,sx=1;if(p.st==='react'){sy=1+Math.sin(p.ph*20)*.04;sx=1-Math.sin(p.ph*20)*.03}
+  drawImg(img,p.x,p.y-bob,h,flip,rot,sx,sy);
+  if(p.type==='dog'&&p.carry){ctx.save();ctx.translate(p.x+p.dir*60,p.y-bob-70);ctx.rotate(p.dir*.3);const e=IMG.eggplant;ctx.drawImage(e,-34,-28,68,56);ctx.restore()}
+  if(p.st==='chase'){ctx.save();ctx.font='40px system-ui';ctx.textAlign='center';ctx.fillText(Math.sin(p.ph*12)>0?'🚨':'❗',p.x,p.y-h-30);ctx.restore()}
+}
+function drawHints(){
+  for(const p of G.peds){
+    const t=T[p.type],h=t.h*p.sc,head=p.y-h-12;
+    if(p.sayT>0){speech(p.x,head-6,p.say);continue}
+    if(p.ev||p.st!=='walk')continue;
+    const ad=Math.abs(p.x-G.d.x);if(ad>420||p.type==='police')continue;
+    let vis=1;if(G.scramble>0){vis=1}else if(G.lvl>=3&&p.type!=='dog'){vis=p.hintT<1.5?1:Math.max(0,1-(p.hintT-1.5)*3)}
+    if(vis<=0)continue;const s=Math.min(1,p.hintT*6);
+    ctx.save();ctx.globalAlpha=vis;let e=G.scramble>0?'❓':p.hint;if(G.scramble<=0&&G.fx.cologne>0&&['girl','babushka','gopnik','blogger'].includes(p.type))e='😍';const col=(G.lvl<2&&G.scramble<=0&&p.type!=='dog')?((p.like||G.fx.cologne>0||G.fx.show>0)?'y':'n'):(p.type==='dog'&&G.lvl<2?'n':null);bubble(p.x+p.dir*-10,head,e,(.8+.2*s*(1+Math.sin(p.ph*5)*.04))*(p===G.target?1.15:1),col);ctx.restore();
+  }
+}
+function drawDima(){
+  const d=G.d,base=320,x=d.x,y=GY;let img,flip=false,bob=0,rot=0;
+  shadow(x,y,70);
+  if(d.flashing){
+    // rays
+    ctx.save();ctx.translate(x,y-base*.43);ctx.rotate(performance.now()/900);const R=260+Math.sin(d.ft*20)*10;
+    for(let i=0;i<14;i++){ctx.rotate(Math.PI*2/14);ctx.fillStyle=i%2?'rgba(255,240,120,.33)':'rgba(255,120,200,.28)';ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(R,-30);ctx.lineTo(R,30);ctx.closePath();ctx.fill()}
+    ctx.restore();
+    img=IMG.d_flash;const sh=1+Math.sin(d.ft*30)*.015;drawImg(img,x,y,base*1.0,false,0,1,sh);
+    // eggplant
+    const e=IMG.eggplant,k=Math.min(1,d.ft/.22),el=k<1?(1-Math.pow(1-k,3))*(1+Math.sin(k*Math.PI)*.35):1+Math.sin(d.ft*14)*.06;
+    const gold=G.fx.gold>0;ctx.save();ctx.translate(x+d.dir*(12+44*el),y-base*.44);ctx.scale(d.dir,1);ctx.rotate(3.63+Math.sin(d.ft*9)*.08);
+    const ew=118*el,eh=ew*e.height/e.width;if(gold){ctx.filter='sepia(1) saturate(4) hue-rotate(5deg) brightness(1.25)'}ctx.drawImage(e,-ew/2,-eh/2,ew,eh);ctx.restore();
+    if(Math.random()<.3)G.parts.push({x:x+d.dir*rand(30,110),y:y-base*.43+rand(-40,40),vx:d.dir*rand(40,140),vy:rand(-120,-40),e:pick(['✨','💜','⭐']),size:rand(18,30),life:.6,max:.6,r:0,vr:0,g:0});
+    return;
+  }
+  if(d.pose==='thumb')img=IMG.d_thumb;else if(d.pose==='dance'){img=IMG.d_dance;bob=Math.abs(Math.sin(performance.now()/90))*10;rot=Math.sin(performance.now()/120)*.08}
+  else if(d.pose==='facepalm')img=IMG.d_facepalm;else if(d.pose==='what')img=IMG.d_what;
+  else if(d.moving){img=IMG.d_dance;flip=d.dir<0;bob=Math.abs(Math.sin(d.walkT*11))*9;rot=Math.sin(d.walkT*11)*.05}
+  else{const c=Math.floor(performance.now()/2600)%3;img=[IMG.d_wave,IMG.d_shrug,IMG.d_lean][c];bob=Math.sin(performance.now()/400)*2}
+  if(d.stun>0)rot+=Math.sin(performance.now()/40)*.06;
+  drawImg(img,x,y-bob,base,flip,rot);
+  if(G.fx.cologne>0){ctx.save();ctx.globalAlpha=.35+Math.sin(performance.now()/150)*.15;ctx.font='34px system-ui';ctx.textAlign='center';for(let i=0;i<3;i++){const a=performance.now()/600+i*2.1;ctx.fillText('💗',x+Math.cos(a)*90,y-160+Math.sin(a)*120)}ctx.restore()}
+  if(d.hide){
+    ctx.save();ctx.translate(x,y-base*.62);ctx.rotate(-.05+Math.sin(performance.now()/500)*.02);
+    ctx.fillStyle='#f3efe2';ctx.strokeStyle='#3b3320';ctx.lineWidth=4;rr(-95,-115,190,230,6);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#2a2418';ctx.font='900 30px "Russo One",sans-serif';ctx.textAlign='center';ctx.fillText('ГАЗЕТА',0,-78);
+    ctx.font='700 13px Rubik,sans-serif';ctx.fillText('«ЗДОРОВЫЙ ОБРАЗ ЖИЗНИ»',0,-58);
+    ctx.fillStyle='#bdb59c';for(let i=0;i<8;i++){ctx.fillRect(-80,-40+i*17,72,7);ctx.fillRect(8,-40+i*17,72,7)}
+    ctx.fillStyle='#1d1a12';ctx.beginPath();ctx.arc(-26,-20,13,0,7);ctx.arc(26,-20,13,0,7);ctx.fill();
+    ctx.font='22px system-ui';ctx.fillText('👀',0,-12);ctx.restore();
+  }
+  if(d.noEgg>0){ctx.save();ctx.font='700 22px Rubik';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.strokeStyle='#000';ctx.lineWidth=4;const tx='Баклажан украден! '+Math.ceil(d.noEgg);ctx.strokeText(tx,x,y-base-24);ctx.fillText(tx,x,y-base-24);ctx.restore()}
+}
+function render(){
+  const w=cv.width,h=cv.height;ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#1a0b2e';ctx.fillRect(0,0,w,h);
+  if(!G)return;
+  const sk=G.shake?rand(-G.shake,G.shake):0,sk2=G.shake?rand(-G.shake,G.shake):0;
+  ctx.setTransform(SC*DPR,0,0,SC*DPR,(OX+sk)*DPR,(OY+sk2)*DPR);
+  ctx.save();ctx.beginPath();ctx.rect(0,0,VW,VH);ctx.clip();
+  const bg=IMG[LEVELS[G.lvl].bg];ctx.drawImage(bg,BG.x,BG.y,BG.w,BG.h);
+  if(LEVELS[G.lvl].bg==='bg_club'){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.12+.08*Math.sin(performance.now()/180);ctx.fillStyle=Math.sin(performance.now()/400)>0?'#ff2e88':'#00e5ff';ctx.fillRect(0,0,VW,VH);ctx.restore()}
+  for(const p of G.peds)if(p.type==='police'&&p.st==='walk')drawCone(p);
+  drawBossCone();
+  if(G.target){const t=G.target,pulse=1+Math.sin(performance.now()/130)*.12;ctx.save();ctx.translate(t.x,t.y+4);ctx.scale(pulse,pulse);ctx.lineWidth=6;ctx.strokeStyle=G.lvl<2?'#fff':'rgba(255,255,255,.85)';ctx.setLineDash([14,9]);ctx.lineDashOffset=-performance.now()/30;ctx.beginPath();ctx.ellipse(0,0,78,20,0,0,7);ctx.stroke();ctx.restore()}
+  // sort draw
+  const list=G.peds.map(p=>({y:p.y,f:()=>drawPed(p)}));list.push({y:GY+.5,f:drawDima});if(G.boss)list.push({y:GY-38,f:drawBoss});
+  for(const wp of G.pows)list.push({y:wp.gy+1,f:()=>{const b=wp.y>=wp.gy?Math.sin(performance.now()/180)*6:0;if(wp.life<2&&Math.floor(wp.life*8)%2)return;ctx.save();ctx.translate(wp.x,wp.y-40+b);const g=ctx.createRadialGradient(0,0,4,0,0,46);g.addColorStop(0,'rgba(255,255,180,.95)');g.addColorStop(1,'rgba(255,200,0,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,46,0,7);ctx.fill();ctx.font='46px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(POWERS[wp.k].e,0,2);ctx.restore()}});
+  list.sort((a,b)=>a.y-b.y).forEach(o=>o.f());
+  drawHints();
+  if(G.inCone&&G.d&&!G.busting){const a=Math.sin(performance.now()/90)>0;outlined(a?'👁️ МЕНТ СМОТРИТ!':'⚠️ НЕ ПОКАЗЫВАЙ!',clamp(G.d.x,200,VW-200),GY-372,34,'#ff3b5c')}
+  if(G.fx.show>0)outlined('🎆 ШОУ '+Math.ceil(G.fx.show),VW/2,VH*.3,54,'#ffcc00');
+  for(const q of G.parts){ctx.save();ctx.globalAlpha=Math.min(1,q.life/q.max*1.5);ctx.translate(q.x,q.y);ctx.rotate(q.r);ctx.font=q.size+'px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(q.e,0,0);ctx.restore()}
+  for(const f of G.floats){const k=f.life/f.max,s=k>.85?1+(k-.85)*4:1;outlined(f.txt,clamp(f.x,170,VW-170),f.y,f.size*s,f.col,Math.min(1,k*2))}
+  // overlays
+  if(G.stars>=2||G.busting){const a=.18+.12*Math.sin(performance.now()/120);const g=ctx.createRadialGradient(VW/2,VH/2,VH*.25,VW/2,VH/2,VH*.75);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,Math.sin(performance.now()/160)>0?`rgba(255,0,40,${a*2})`:`rgba(0,80,255,${a*2})`);ctx.fillStyle=g;ctx.fillRect(0,0,VW,VH)}
+  if(G.fx.gold>0){ctx.save();ctx.globalAlpha=.08;ctx.fillStyle='#ffd700';ctx.fillRect(0,0,VW,VH);ctx.restore()}
+  if(G.flashW>0){ctx.fillStyle=`rgba(255,255,255,${G.flashW})`;ctx.fillRect(0,0,VW,VH)}
+  if(G.busting){outlined('ЗАДЕРЖАН!',VW/2,VH*.4,92,'#ff2e88',Math.min(1,(1.6-G.busting)*3))}
+  if(G.overSoon){outlined('НОКАУТ!',VW/2,VH*.4,92,'#ff2e88',Math.min(1,(1.2-G.overSoon)*3))}
+  ctx.restore();
+}
+
+// ================= HUD =================
+let hudCache={};
+function hud(){
+  const set=(k,v,fn)=>{if(hudCache[k]!==v){hudCache[k]=v;fn(v)}};
+  set('score',G.score,v=>$('score').innerHTML='<small>ОЧКИ</small>'+v);
+  set('hearts',G.hearts,v=>$('hearts').textContent='❤️'.repeat(Math.max(0,v))+'🖤'.repeat(Math.max(0,3-v)));
+  const st=Math.ceil(G.stars-.001);set('stars',st,v=>{$('stars').innerHTML=[0,1,2].map(i=>`<span class="${i<v?'':'off'}">⭐</span>`).join('');$('stars').classList.toggle('alarm',v>=2)});
+  set('timer',Math.ceil(G.time*4),()=>$('timer').style.width=(G.time/LEVELS[G.lvl].time*100)+'%');
+  if(G.boss){set('quota','b'+Math.ceil(G.boss.nerve),()=>{$('quota').innerHTML='🎖️ Нервы генерала: '+Math.ceil(G.boss.nerve)+'%'});set('bossbar',Math.ceil(G.boss.nerve),v=>{$('bossWrap').classList.remove('hidden');$('bossFill').style.width=v+'%'})}else{set('bossbar',-1,()=>$('bossWrap').classList.add('hidden'));
+  set('quota',G.lscore,v=>{const q=LEVELS[G.lvl].quota;$('quota').innerHTML=(v>=q?'✅ ':'🎯 ')+'План: '+Math.min(v,q)+' / '+q})}
+  set('combo',G.combo,v=>{$('combo').classList.toggle('hidden',v<2);$('combo').textContent='🔥 КОМБО '+v+' · ×'+mult()});
+  const chips=[];if(G.fx.cologne>0)chips.push('🧴 '+Math.ceil(G.fx.cologne));if(G.fx.glasses>0)chips.push('🕶️ '+Math.ceil(G.fx.glasses));if(G.fx.gold>0)chips.push('🌟×2 '+Math.ceil(G.fx.gold));
+  set('chips',chips.join('|'),()=>$('chips').innerHTML=chips.map(c=>`<span class="chip">${c}</span>`).join(' '));
+  const d=G.d;set('flashdis',d.noEgg>0||d.hide||d.stun>0,v=>$('bFlash').classList.toggle('dis',v));
+  set('showm',Math.round(G.showM)+'|'+(G.fx.show>0),()=>{$('showRing').style.setProperty('--p',G.showM+'%');$('bShow').classList.toggle('ready',G.showM>=100&&G.fx.show<=0)});
+  set('danger',G.inCone,v=>$('bFlash').classList.toggle('danger',v));
+  set('stam',Math.round(d.stam*10),()=>$('hideRing').style.setProperty('--p',(d.stam/4*100)+'%'));
+}
+
+// ================= LOOP =================
+function loop(t){
+  const dt=Math.min(.05,(t-lastT)/1000||0);lastT=t;
+  if(state==='play'){update(dt);if(state==='play')hud()}
+  render();requestAnimationFrame(loop);
+}
+
+// ================= SCREENS =================
+const screens=['sTitle','sTut','sIntro','sDone','sPause','sOver'];
+function show(id){screens.forEach(s=>$(s).classList.toggle('hidden',s!==id));const play=id===null||id==='sIntro'||id==='sPause';['hud','controls','topBtns'].forEach(e=>$(e).classList.toggle('hidden',!(id===null)))}
+function onLoaded(){try{TG&&TG.CloudStorage&&TG.CloudStorage.getItem('best',(e,v)=>{const n=parseInt(v||'0',10);if(n>hiScore){hiScore=n;updBest()}})}catch(e){}
+  $('loader').style.display='none';$('logo').src=ASSETS.logo;$('titleDima').src=ASSETS.d_wave;$('mugImg').src=ASSETS.d_facepalm;
+  updBest();setMute(muted);$('bVo').style.opacity=voOn?1:.4;state='title';show('sTitle');
+  // title background: preview park
+  newRun();startLevel(0);G.peds=[];
+  requestAnimationFrame(loop);
+}
+function updBest(){$('titleBest').textContent=hiScore?('🏆 Рекорд: '+hiScore+' · '+rankOf(hiScore)):''}
+const TUT=[
+ {e:'👆',h:'ХОДИ',p:'Тапни или веди пальцем по экрану — Дима пойдёт туда.'},
+ {e:'🍆',h:'ПОКАЗЫВАЙ',p:'Подойди к прохожему — под ним появится <b>кружок 🎯</b>. Смотри мысль над головой и жми 🍆, только если <b>ЗАЙДЁТ</b>. На первых уровнях облачко ещё и цветное: <b style="color:#16a34a">зелёное — да</b>, <b style="color:#dc2626">красное — нет</b>.',x:'😏 😍 🔥 🍆 = ДА<br>😤 🙄 📵 🤢 = НЕТ'},
+ {e:'🎆',h:'ШОУ',p:'Каждый удачный показ заряжает <b>оранжевую кнопку ШОУ</b>. Заряд полный — жми: 6 секунд все в восторге, менты аплодируют, очки ×2.'},
+ {e:'✅',h:'ПЛАН',p:'Набрал план уровня — сверху появится зелёная кнопка <b>«Дальше»</b>. Можно идти сразу или добить очков: за оставшиеся секунды дают бонус. За каждый пройденный уровень +1 ❤️.'},
+ {e:'👮',h:'НЕ ПАЛИСЬ',p:'Мент видит всё в <b>жёлтом луче</b> перед собой. Если ты в луче — над Димой мигает <b style="color:#e11d48">«МЕНТ СМОТРИТ»</b> и кнопка краснеет. 3 звезды — автозак. Зажми 📰, чтобы стать газетой.'},
+ {e:'🥸',h:'ОСТОРОЖНО',p:'Усатые «девушки» — переодетые менты. Собаки воруют баклажан. Гопники бьют. Бабушки… непредсказуемы.'},
+ {e:'🎖️',h:'ФИНАЛ',p:'На Красной площади ждёт <b>генерал Баклажанов</b>. Показывай фанатам — его нервы сдают. Показ <b>у него за спиной</b> бьёт сильнее. Когда поплывёт 💫 — покажи <b>ЕМУ</b>.'},
+ {e:'🌟',h:'БОНУСЫ',p:'Подбирай: 🧴 одеколон (все в восторге), 🕶️ очки (менты слепнут), 🌟 золотой баклажан (×2), 🌯 шаурма (+жизнь), 💸 взятка (−звезда).'}
+];
+let tutI=0,tutThen=null;
+function showTut(then){tutI=0;tutThen=then;renderTut();show('sTut')}
+function renderTut(){const t=TUT[tutI];$('tutCard').innerHTML=`<div class="big">${t.e}</div><h2 class="H">${t.h}</h2><p>${t.p}</p>${t.x?`<div class="emo" style="font-size:20px;letter-spacing:1px;line-height:1.6">${t.x}</div>`:''}<br><button class="btn" id="bTutN">${tutI<TUT.length-1?'ДАЛЬШЕ':'ПОНЯЛ, ПОГНАЛИ!'}</button><div class="dots">${TUT.map((_,i)=>i===tutI?'●':'○').join('')}</div>`;
+  $('bTutN').onclick=()=>{SFX.tick();tutI++;if(tutI>=TUT.length){store.set('tut2',1);tutThen&&tutThen()}else renderTut()}}
+function intro(i){
+  G.startScore=G.score;startLevel(i);state='intro';const L=LEVELS[i];maxLvl=Math.max(maxLvl,i);
+  $('iNum').textContent=L.boss?'⚠️ ФИНАЛЬНЫЙ БОСС ⚠️':'ЛОКАЦИЯ '+(i+1)+' / '+LEVELS.length;$('iName').textContent=L.name;$('iSub').textContent=L.sub;$('iQ').textContent=L.boss?'🎖️ Доведи генерала до нервного срыва за '+L.time+' сек':'🎯 План: '+L.quota+' очков за '+L.time+' сек';
+  show('sIntro');$('iName').style.animation='none';void $('iName').offsetWidth;$('iName').style.animation='';SFX.wow();
+}
+function go(){$('bDone').classList.add('hidden');G.doneShown=false;$('tip').classList.remove('show');state='play';setTimeout(()=>tip('start','👆 <b>Тапай по экрану</b> — Дима идёт туда. Подойди к прохожему и смотри, что у него в мыслях.'),1500);show(null);hudCache={};Music.play(LEVELS[G.lvl].song);nar(LEVELS[G.lvl].start||NAR.start);lastT=performance.now()}
+function levelDone(){
+  $('bDone').classList.add('hidden');
+  if(G.lvl>=LEVELS.length-1){return gameOver('win')}
+  G.hearts=Math.min(3,G.hearts+1);
+  state='done';Music.stop();SFX.fanfare();
+  const quips=['Город запомнит этот день.','Дима переходит на новый уровень. Буквально.','Местные жители в смятении. Дима — в ударе.','Полиция в замешательстве. Девушки — в восторге.'];
+  if(G.lvl>=LEVELS.length-1){return gameOver('win')}
+  $('dQuip').textContent=pick(quips);$('dStats').innerHTML=statHTML();show('sDone');
+}
+function statHTML(){const s=G.stats,acc=s.shown?Math.round(s.liked/s.shown*100):0;return `<div>Очки<b>${G.score}</b></div><div>Зашло<b>${s.liked} / ${s.shown}</b></div><div>Точность<b>${acc}%</b></div><div>Макс. комбо<b>${s.maxCombo}</b></div>`}
+let lastOver={};
+function gameOver(why){
+  $('bDone').classList.add('hidden');$('tip').classList.remove('show');
+  state='over';Music.stop();setTimeout(voStopAll,2500);const s=G.score;const best=s>hiScore;if(best){hiScore=s;store.set('best',s);try{TG&&TG.CloudStorage&&TG.CloudStorage.setItem('best',String(s))}catch(e){}}
+  const R={busted:['🚓','ЗАДЕРЖАН','Три звезды. Автозак. Мама уже едет с передачкой.'],
+    beaten:['🤕','ИЗБИТ ОБЩЕСТВЕННОСТЬЮ','Показывал не тем. Общественность ответила.'],
+    quota:['🥒','НЕ ДОТЯНУЛ','План не выполнен. Баклажан оказался кабачком.'],
+    win:['👑','ГЕНЕРАЛ ПОВЕРЖЕН','Все 7 локаций пройдены. Генерал ушёл на пенсию. Город пал к ногам Димы.'],
+    boss:['🎖️','ГЕНЕРАЛ УСТОЯЛ','Время вышло. Генерал вызвал ещё 40 нарядов и ОМОН на пони.']}[why];
+  $('overEmoji').textContent=R[0];$('overTitle').textContent=R[1];$('overReason').textContent=R[2];
+  $('overScore').textContent=s;$('overRank').textContent=rankOf(s);$('overBest').textContent=best?'🎉 НОВЫЙ РЕКОРД!':'Рекорд: '+hiScore;
+  $('oStats').innerHTML=statHTML();
+  const m=why==='busted';$('mug').classList.toggle('hidden',!m);$('overEmoji').classList.toggle('hidden',m);
+  if(m){$('mugPlate').textContent='ДИМА · СТ. 🍆 · '+new Date().toLocaleDateString('ru-RU');const f=$('mug').querySelector('.flashfx');f.style.animation='none';void f.offsetWidth;f.style.animation='';SFX.cam()}
+  why==='win'?SFX.fanfare():setTimeout(SFX.trombone,300);
+  lastOver={s,rank:rankOf(s),why};const canR=why!=='win'&&G.lvl>0;$('bRetry').classList.toggle('hidden',!canR);$('bRetry').textContent='🔁 С ЛОКАЦИИ «'+LEVELS[G.lvl].name+'»';$('bAgain').className=canR?'btn ghost':'btn';show('sOver');updBest();
+}
+function shareText(){const w={busted:'загремел в автозак',beaten:'был избит общественностью',quota:'не дотянул',win:'победил генерала',boss:'проиграл генералу'}[lastOver.why]||'';return `🍆 Я набрал ${lastOver.s} очков в «Баклажан Судьбы» — звание «${lastOver.rank}». Дима ${w} 😂 Побьёшь?`}
+function url(){return TG?TG_LINK:(SHARE_URL&&SHARE_URL.indexOf('http')===0?SHARE_URL:location.href)}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2000)}
+function openUrl(u){if(TG){try{if(u.indexOf('https://t.me/')===0)TG.openTelegramLink(u);else TG.openLink(u);return}catch(e){}}const a=document.createElement('a');a.href=u;a.target='_blank';a.rel='noopener noreferrer';document.body.appendChild(a);a.click();a.remove()}
+async function copy(t){try{await navigator.clipboard.writeText(t);return true}catch(e){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(_){}ta.remove();return ok}}
+
+// ================= INPUT =================
+function vx(cx){return (cx-OX)/SC}
+cv.addEventListener('pointerdown',e=>{initAudio();if(state==='play'){input.tx=vx(e.clientX);cv.setPointerCapture(e.pointerId)}});
+cv.addEventListener('pointermove',e=>{if(state==='play'&&e.buttons)input.tx=vx(e.clientX)});
+cv.addEventListener('pointerup',()=>{});
+function holdBtn(el,key){
+  const on=e=>{e.preventDefault();initAudio();input[key]=true;el.classList.add('on')};const off=e=>{input[key]=false;el.classList.remove('on')};
+  el.addEventListener('pointerdown',on);el.addEventListener('pointerup',off);el.addEventListener('pointercancel',off);el.addEventListener('pointerleave',off);el.addEventListener('contextmenu',e=>e.preventDefault());
+}
+holdBtn($('bFlash'),'flash');
+$('bShow').addEventListener('pointerdown',e=>{e.preventDefault();initAudio();startShow()});
+$('bDone').onclick=()=>{if(state!=='play')return;const bonus=Math.round(G.time)*10;if(bonus>0){G.score+=bonus;G.lscore+=bonus;toast('⏱️ Бонус за время: +'+bonus)}levelDone()};holdBtn($('bHide'),'hide');
+addEventListener('keydown',e=>{input.keys[e.key]=true;if(e.key==='s'||e.key==='S')startShow();if(e.key===' '){input.flash=true;e.preventDefault()}if(e.key==='Shift'||e.key==='ArrowDown')input.hide=true;if(e.key.startsWith('Arrow')||e.key==='a'||e.key==='d')input.tx=null;});
+addEventListener('keyup',e=>{input.keys[e.key]=false;if(e.key===' ')input.flash=false;if(e.key==='Shift'||e.key==='ArrowDown')input.hide=false});
+document.addEventListener('contextmenu',e=>e.preventDefault());
+document.addEventListener('gesturestart',e=>e.preventDefault());
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='play')pause()});
+function pause(){state='pause';Music.stop();voStopAll();input.flash=input.hide=false;$('sPause').classList.remove('hidden')}
+
+$('bPlay').onclick=()=>{initAudio();SFX.boing();newRun();if(!store.get('tut2',0))showTut(()=>intro(0));else intro(0)};
+$('bHow').onclick=()=>{initAudio();SFX.tick();showTut(()=>show('sTitle'))};
+$('bGo').onclick=()=>{initAudio();go()};
+$('bNext').onclick=()=>{initAudio();intro(G.lvl+1)};
+$('bRetry').onclick=()=>{initAudio();SFX.boing();const l=G.lvl;G.score=G.startScore||0;G.hearts=3;intro(l)};
+$('bAgain').onclick=()=>{initAudio();SFX.boing();newRun();intro(0)};
+$('bMenu').onclick=()=>{state='title';newRun();startLevel(0);G.peds=[];show('sTitle')};
+$('bPause').onclick=()=>{if(state==='play')pause()};
+$('bResume').onclick=()=>{$('sPause').classList.add('hidden');state='play';Music.play(LEVELS[G.lvl].song);lastT=performance.now()};
+$('bQuit').onclick=()=>{$('sPause').classList.add('hidden');state='title';Music.stop();newRun();startLevel(0);G.peds=[];show('sTitle')};
+window.__bs={get G(){return G},input,get state(){return state},spawn:t=>spawn(t)};
+$('bVo').onclick=()=>{initAudio();voOn=!voOn;store.set('vo',voOn);$('bVo').style.opacity=voOn?1:.4;if(!voOn)voStopAll();else voPlay('Дима вышел из дома. Город ещё не знает, что его ждёт.','nar')};
+$('bMute').onclick=()=>{initAudio();setMute(!muted)};
+if(TG){$('bWa').classList.add('hidden');$('bTg').textContent='✈️ Отправить другу'}
+$('bTg').onclick=()=>openUrl('https://t.me/share/url?url='+encodeURIComponent(url())+'&text='+encodeURIComponent(shareText()));
+$('bWa').onclick=()=>openUrl('https://wa.me/?text='+encodeURIComponent(shareText()+' '+url()));
+$('bShare').onclick=async()=>{const data={title:'Баклажан Судьбы 🍆',text:shareText(),url:url()};try{if(navigator.share){await navigator.share(data);return}}catch(e){if(e&&e.name==='AbortError')return}const ok=await copy(shareText()+' '+url());toast(ok?'Ссылка скопирована! Кидай друзьям 🍆':'Скопируй ссылку из адресной строки')};
+})();
+</script>
+</body>
+</html>
